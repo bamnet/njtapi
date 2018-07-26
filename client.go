@@ -20,19 +20,24 @@ func NewClient(baseURL, username, password string) *Client {
 	return &Client{&http.Client{}, baseURL, username, password}
 }
 
+type LatLng struct {
+	Lat float64 // Latitude
+	Lng float64 // Longitude
+}
+
 type Train struct {
-	ID                     int     `xml:"ID"`
-	Line                   string  `xml:"TRAIN_LINE"`
-	Direction              string  `xml:"DIRECTION"`
-	LastModified           string  `xml:"LAST_MODIFIED"`
-	ScheduledDepartureTime string  `xml:"SCHED_DEP_TIME"`
-	SecondsLate            int     `xml:"SEC_LATE"`
-	NextStop               string  `xml:"NEXT_STOP"`
-	Longitude              float64 `xml:"LONGITUDE"`
-	Latitude               float64 `xml:"LATITUDE"`
+	ID                     int    // Train number
+	Line                   string // Train line
+	Direction              string // Eastbound or Westbound
+	LastModified           string
+	ScheduledDepartureTime string
+	SecondsLate            int // Train delay in seconds
+	NextStop               string
+	LatLng                 LatLng // Last identified latlng
 }
 
 const vehicleData = "getVehicleDataXML"
+
 func (c *Client) VehicleData() error {
 	u, err := url.Parse(c.baseURL)
 	if err != nil {
@@ -57,7 +62,17 @@ func (c *Client) VehicleData() error {
 
 	data := struct {
 		XMLName xml.Name `xml:"TRAINS"`
-		Trains  []Train  `xml:"TRAIN"`
+		Trains  []struct {
+			ID                     int     `xml:"ID"`
+			Line                   string  `xml:"TRAIN_LINE"`
+			Direction              string  `xml:"DIRECTION"`
+			LastModified           string  `xml:"LAST_MODIFIED"`
+			ScheduledDepartureTime string  `xml:"SCHED_DEP_TIME"`
+			SecondsLate            int     `xml:"SEC_LATE"`
+			NextStop               string  `xml:"NEXT_STOP"`
+			Longitude              float64 `xml:"LONGITUDE"`
+			Latitude               float64 `xml:"LATITUDE"`
+		} `xml:"TRAIN"`
 	}{}
 
 	err = xml.Unmarshal(body, &data)
