@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/bamnet/njtapi"
 )
@@ -17,5 +18,9 @@ func main() {
 	flag.Parse()
 
 	c := njtapi.NewClient(*baseURL, *username, *password)
-	c.VehicleData()
+	trains, err := c.VehicleData()
+	if err != nil {
+		fmt.Errorf("VehicleData() error: %v", err)
+	}
+	fmt.Printf("%+v", trains)
 }
