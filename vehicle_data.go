@@ -26,7 +26,7 @@ type Train struct {
 
 // VehicleData returns up the most recent information about trains.
 func (c *Client) VehicleData() ([]Train, error) {
-	resp, err := c.fetch(vehicleDataEndpoint)
+	resp, err := c.fetch(vehicleDataEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}

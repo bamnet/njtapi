@@ -24,7 +24,7 @@ func NewClient(baseURL, username, password string) *Client {
 }
 
 // fetch retrieves data from an API endpoint.
-func (c *Client) fetch(endpoint string) ([]byte, error) {
+func (c *Client) fetch(endpoint string, params map[string]string) ([]byte, error) {
 	u, err := url.Parse(c.baseURL)
 	if err != nil {
 		return nil, err
@@ -34,6 +34,9 @@ func (c *Client) fetch(endpoint string) ([]byte, error) {
 	q := u.Query()
 	q.Set("username", c.username)
 	q.Set("password", c.password)
+	for k, v := range params {
+		q.Set(k, v)
+	}
 	u.RawQuery = q.Encode()
 
 	resp, err := c.httpClient.Get(u.String())
