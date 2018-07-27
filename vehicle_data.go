@@ -24,7 +24,7 @@ type Train struct {
 	LatLng                 LatLng // Last identified latlng
 }
 
-// VehicleData looks up the most recent information about trains.
+// VehicleData returns up the most recent information about trains.
 func (c *Client) VehicleData() ([]Train, error) {
 	resp, err := c.fetch(vehicleDataEndpoint)
 	if err != nil {
@@ -53,7 +53,9 @@ func (c *Client) VehicleData() ([]Train, error) {
 
 	trains := make([]Train, len(data.Trains))
 	for i, d := range data.Trains {
-		trains[i] = Train{d.ID, d.Line, d.Direction, d.LastModified, d.ScheduledDepartureTime, d.SecondsLate, d.NextStop, LatLng{d.Latitude, d.Longitude}}
+		trains[i] = Train{d.ID, d.Line, d.Direction, d.LastModified,
+			d.ScheduledDepartureTime, d.SecondsLate, d.NextStop,
+			LatLng{d.Latitude, d.Longitude}}
 	}
 	return trains, nil
 }
