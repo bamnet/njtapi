@@ -2,6 +2,8 @@ package njtapi
 
 import (
 	"encoding/xml"
+	"strconv"
+	"time"
 )
 
 const stationDataEndpoint = "getTrainScheduleXML"
@@ -20,12 +22,12 @@ type StationTrain struct {
 	Line                   string         // Train line
 	LineAbbrv              string         // Train line abbreviation
 	Destination            string         // Destination for the train
-	ScheduledDepartureDate string         // Scheduled departure time from the station
+	ScheduledDepartureDate time.Time      // Scheduled departure time from the station
 	Track                  string         // Track number/letter
 	Status                 string         // Current train status
 	SecondsLate            int            // Train delay in seconds
-	LatLng                 LatLng         // Train location
-	LatLngTimestamp        string         // Time the train location was measured
+	LatLng                 *LatLng        // Train location
+	LatLngTimestamp        time.Time      // Time the train location was measured
 	InlineMsg              string         // In-line message for the train at this station
 	Stops                  []StationStops // List of all stops for this train.
 }
@@ -82,20 +84,33 @@ func (c *Client) StationData(station string) (*Station, error) {
 	trains := make([]StationTrain, len(data.Items))
 	for i, r := range data.Items {
 		trains[i] = StationTrain{
-			Index: r.Index,
-			ScheduledDepartureDate: r.ScheduledDepartureDate,
-			Destination:            r.Destination,
-			Track:                  r.Track,
-			Line:                   r.Line,
-			TrainID:                r.TrainID,
-			Status:                 r.Status,
-			SecondsLate:            r.SecondsLate,
-			LatLngTimestamp:        r.GPSTime,
-			LineAbbrv:              r.LineAbbreviation,
-			InlineMsg:              r.InlineMsg,
+			Index:       r.Index,
+			Destination: r.Destination,
+			Track:       r.Track,
+			Line:        r.Line,
+			TrainID:     r.TrainID,
+			Status:      r.Status,
+			SecondsLate: r.SecondsLate,
+			LineAbbrv:   r.LineAbbreviation,
+			InlineMsg:   r.InlineMsg,
 		}
+		trains[i].ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
+		trains[i].LatLngTimestamp, _ = parseTime(r.GPSTime)
+		trains[i].LatLng, _ = parseLatLng(r.Latitude, r.Longitude)
 	}
 
 	s := &Station{ID: data.Station2Char, Name: data.StationName, Departures: trains}
 	return s, nil
+}
+
+func parseLatLng(lat, lng string) (*LatLng, error) {
+	if lat != " " && lng != " " {
+		lt, err := strconv.ParseFloat(lat, 64)
+		ln, err := strconv.ParseFloat(lng, 64)
+		if err != nil {
+			return nil, err
+		}
+		return &LatLng{Lat: lt, Lng: ln}, nil
+	}
+	return nil, nil
 }
