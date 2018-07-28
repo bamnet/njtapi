@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// Latitude longitude position of an object.
+type LatLng struct {
+	Lat float64 // Latitude
+	Lng float64 // Longitude
+}
+
 var tz *time.Location
 
 func init() {
