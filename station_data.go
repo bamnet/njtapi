@@ -17,25 +17,26 @@ type Station struct {
 
 // A StationTrain models a train which is scheduled to depart from a station.
 type StationTrain struct {
-	Index                  int            // Row index
-	TrainID                int            // Train ID
-	Line                   string         // Train line
-	LineAbbrv              string         // Train line abbreviation
-	Destination            string         // Destination for the train
-	ScheduledDepartureDate time.Time      // Scheduled departure time from the station
-	Track                  string         // Track number/letter
-	Status                 string         // Current train status
-	SecondsLate            int            // Train delay in seconds
-	LatLng                 *LatLng        // Train location
-	LatLngTimestamp        time.Time      // Time the train location was measured
-	InlineMsg              string         // In-line message for the train at this station
-	Stops                  []StationStops // List of all stops for this train.
+	Index                  int           // Row index
+	TrainID                int           // Train ID
+	Line                   string        // Train line
+	LineAbbrv              string        // Train line abbreviation
+	Destination            string        // Destination for the train
+	ScheduledDepartureDate time.Time     // Scheduled departure time from the station
+	Track                  string        // Track number/letter
+	Status                 string        // Current train status
+	SecondsLate            int           // Train delay in seconds
+	LatLng                 *LatLng       // Train location
+	LatLngTimestamp        time.Time     // Time the train location was measured
+	InlineMsg              string        // In-line message for the train at this station
+	Stops                  []StationStop // List of all stops for this train.
 }
 
-type StationStops struct {
-	Name     string // Station stop name
-	Time     string // Estimated arrival time at this stop
-	Departed string // Indicates if the train has departed the stop or not
+// A StationStop is a stop this train will make, or has made, on it's route.
+type StationStop struct {
+	Name     string    // Station stop name
+	Time     time.Time // Estimated arrival time at this stop
+	Departed bool      // Indicates if the train has departed the stop or not
 }
 
 // StationData returns details about upcoming trains stopping at a station.
@@ -97,6 +98,14 @@ func (c *Client) StationData(station string) (*Station, error) {
 		trains[i].ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
 		trains[i].LatLngTimestamp, _ = parseTime(r.GPSTime)
 		trains[i].LatLng, _ = parseLatLng(r.Latitude, r.Longitude)
+
+		stops := make([]StationStop, len(r.Stops))
+		for j, s := range r.Stops {
+			stops[j] = StationStop{Name: s.Name}
+			stops[j].Time, _ = parseTime(s.Time)
+			stops[j].Departed = (s.Departed == "YES")
+		}
+		trains[i].Stops = stops
 	}
 
 	s := &Station{ID: data.Station2Char, Name: data.StationName, Departures: trains}
