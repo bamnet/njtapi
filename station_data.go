@@ -3,6 +3,7 @@ package njtapi
 import (
 	"encoding/xml"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -90,7 +91,7 @@ func (c *Client) StationData(station string) (*Station, error) {
 			Track:       r.Track,
 			Line:        r.Line,
 			TrainID:     r.TrainID,
-			Status:      r.Status,
+			Status:      strings.TrimSpace(r.Status),
 			SecondsLate: r.SecondsLate,
 			LineAbbrv:   r.LineAbbreviation,
 			InlineMsg:   r.InlineMsg,
