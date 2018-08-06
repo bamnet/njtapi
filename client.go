@@ -23,6 +23,14 @@ func NewClient(baseURL, username, password string) *Client {
 	return &Client{&http.Client{}, baseURL, username, password}
 }
 
+// NewCustomClient uses the supplied `http.Client` when talking to the API.
+// This can be useful if you need to supply a custom timeout, proxy server, etc.
+//
+// See `NewClient` for a description of the rest of the parameters.
+func NewCustomClient(c *http.Client, baseURL, username, password string) *Client {
+	return &Client{c, baseURL, username, password}
+}
+
 // fetch retrieves data from an API endpoint.
 func (c *Client) fetch(endpoint string, params map[string]string) ([]byte, error) {
 	u, err := url.Parse(c.baseURL)
