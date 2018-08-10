@@ -94,7 +94,7 @@ func (c *Client) StationData(station string) (*Station, error) {
 		train := StationTrain{
 			Index:       r.Index,
 			Destination: r.Destination,
-			Track:       r.Track,
+			Track:       strings.TrimSpace(r.Track),
 			Line:        r.Line,
 			TrainID:     tID,
 			Status:      strings.TrimSpace(r.Status),
@@ -108,7 +108,7 @@ func (c *Client) StationData(station string) (*Station, error) {
 
 		stops := make([]StationStop, len(r.Stops))
 		for j, s := range r.Stops {
-			stops[j] = StationStop{Name: s.Name}
+			stops[j] = StationStop{Name: strings.TrimSpace(s.Name)}
 			stops[j].Time, _ = parseTime(s.Time)
 			stops[j].Departed = (s.Departed == "YES")
 		}
