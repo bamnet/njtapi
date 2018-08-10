@@ -57,7 +57,7 @@ func (c *Client) StationData(station string) (*Station, error) {
 			Destination            string `xml:"DESTINATION"`
 			Track                  string `xml:"TRACK"`
 			Line                   string `xml:"LINE"`
-			TrainID                int    `xml:"TRAIN_ID"`
+			TrainID                string `xml:"TRAIN_ID"`
 			ConnectingTrainID      string `xml:"CONNECTING_TRAIN_ID"`
 			Status                 string `xml:"STATUS"`
 			SecondsLate            int    `xml:"SEC_LATE"`
@@ -83,22 +83,28 @@ func (c *Client) StationData(station string) (*Station, error) {
 		return nil, err
 	}
 
-	trains := make([]StationTrain, len(data.Items))
-	for i, r := range data.Items {
-		trains[i] = StationTrain{
+	trains := []StationTrain{}
+	for _, r := range data.Items {
+		tID, err := strconv.Atoi(r.TrainID)
+		if err != nil {
+			// Skip trains that don't have a numeric ID.
+			// These are Amtrak trains with "A123" style IDs.
+			continue
+		}
+		train := StationTrain{
 			Index:       r.Index,
 			Destination: r.Destination,
 			Track:       r.Track,
 			Line:        r.Line,
-			TrainID:     r.TrainID,
+			TrainID:     tID,
 			Status:      strings.TrimSpace(r.Status),
 			SecondsLate: r.SecondsLate,
 			LineAbbrv:   r.LineAbbreviation,
 			InlineMsg:   r.InlineMsg,
 		}
-		trains[i].ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
-		trains[i].LatLngTimestamp, _ = parseTime(r.GPSTime)
-		trains[i].LatLng, _ = parseLatLng(r.Latitude, r.Longitude)
+		train.ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
+		train.LatLngTimestamp, _ = parseTime(r.GPSTime)
+		train.LatLng, _ = parseLatLng(r.Latitude, r.Longitude)
 
 		stops := make([]StationStop, len(r.Stops))
 		for j, s := range r.Stops {
@@ -106,7 +112,8 @@ func (c *Client) StationData(station string) (*Station, error) {
 			stops[j].Time, _ = parseTime(s.Time)
 			stops[j].Departed = (s.Departed == "YES")
 		}
-		trains[i].Stops = stops
+		train.Stops = stops
+		trains = append(trains, train)
 	}
 
 	s := &Station{ID: data.Station2Char, Name: data.StationName, Departures: trains}
