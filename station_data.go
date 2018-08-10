@@ -9,7 +9,7 @@ import (
 
 const stationDataEndpoint = "getTrainScheduleXML"
 
-// A station provides information about the next trains stopping at a station.
+// A Station provides information about the next trains stopping at a station.
 type Station struct {
 	ID         string         // Station character code
 	Name       string         // Station name

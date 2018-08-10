@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Latitude longitude position of an object.
+// LatLng models the latitude and longitude of an object.
 type LatLng struct {
 	Lat float64 // Latitude
 	Lng float64 // Longitude

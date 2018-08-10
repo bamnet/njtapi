@@ -7,7 +7,7 @@ import (
 
 const vehicleDataEndpoint = "getVehicleDataXML"
 
-// A train summarizes the latest information about a train.
+// A Train summarizes the latest information about a train.
 type Train struct {
 	ID                     int       // Train number
 	Line                   string    // Train line
