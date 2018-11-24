@@ -2,6 +2,8 @@ package njtapi
 
 import (
 	"encoding/xml"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -29,7 +31,7 @@ func (c *Client) VehicleData() ([]Train, error) {
 	data := struct {
 		XMLName xml.Name `xml:"TRAINS"`
 		Trains  []struct {
-			ID                     int     `xml:"ID"`
+			ID                     string  `xml:"ID"`
 			Line                   string  `xml:"TRAIN_LINE"`
 			Direction              string  `xml:"DIRECTION"`
 			LastModified           string  `xml:"LAST_MODIFIED"`
@@ -48,8 +50,16 @@ func (c *Client) VehicleData() ([]Train, error) {
 
 	trains := make([]Train, len(data.Trains))
 	for i, d := range data.Trains {
+		// Remove any "a" (amtrak) suffix from the ID.
+		d.ID = strings.TrimSuffix(d.ID, "a")
+
+		id, err := strconv.Atoi(d.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		trains[i] = Train{
-			ID:          d.ID,
+			ID:          id,
 			Line:        d.Line,
 			Direction:   d.Direction,
 			SecondsLate: d.SecondsLate,
