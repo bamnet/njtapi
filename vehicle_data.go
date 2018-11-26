@@ -69,5 +69,27 @@ func (c *Client) VehicleData() ([]Train, error) {
 		trains[i].LastModified, _ = parseTime(d.LastModified)
 		trains[i].ScheduledDepartureTime, _ = parseTime(d.ScheduledDepartureTime)
 	}
-	return trains, nil
+	return removeDupTrains(trains), nil
+}
+
+// removeDupTrains ensures there is only 1 train per ID in the array.
+// If duplicates are found, the train with the most recent LastModified time is kept.
+func removeDupTrains(trains []Train) []Train {
+	ts := map[int]Train{}
+
+	for _, t := range trains {
+		if val, ok := ts[t.ID]; !ok || val.LastModified.Before(t.LastModified) {
+			ts[t.ID] = t
+		}
+	}
+
+	if len(ts) == len(trains) {
+		return trains
+	}
+
+	unique := []Train{}
+	for _, t := range ts {
+		unique = append(unique, t)
+	}
+	return unique
 }
