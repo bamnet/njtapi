@@ -11,14 +11,14 @@ const vehicleDataEndpoint = "getVehicleDataXML"
 
 // A Train summarizes the latest information about a train.
 type Train struct {
-	ID                     int       // Train number
-	Line                   string    // Train line
-	Direction              string    // Eastbound or Westbound
-	LastModified           time.Time // ???
-	ScheduledDepartureTime time.Time // ???
-	SecondsLate            int       // Train delay in seconds
-	NextStop               string    // ???
-	LatLng                 *LatLng   // Last identified latlng
+	ID                     int           // Train number
+	Line                   string        // Train line
+	Direction              string        // Eastbound or Westbound
+	LastModified           time.Time     // ???
+	ScheduledDepartureTime time.Time     // ???
+	SecondsLate            time.Duration // Train delay
+	NextStop               string        // ???
+	LatLng                 *LatLng       // Last identified latlng
 }
 
 // VehicleData returns up the most recent information about trains.
@@ -62,7 +62,7 @@ func (c *Client) VehicleData() ([]Train, error) {
 			ID:          id,
 			Line:        d.Line,
 			Direction:   d.Direction,
-			SecondsLate: d.SecondsLate,
+			SecondsLate: time.Duration(d.SecondsLate) * time.Second,
 			NextStop:    d.NextStop,
 			LatLng:      &LatLng{d.Latitude, d.Longitude},
 		}

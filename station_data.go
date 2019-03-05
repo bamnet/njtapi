@@ -26,7 +26,7 @@ type StationTrain struct {
 	ScheduledDepartureDate time.Time     // Scheduled departure time from the station
 	Track                  string        // Track number/letter
 	Status                 string        // Current train status
-	SecondsLate            int           // Train delay in seconds
+	SecondsLate            time.Duration // Train delay
 	LatLng                 *LatLng       // Train location
 	LatLngTimestamp        time.Time     // Time the train location was measured
 	InlineMsg              string        // In-line message for the train at this station
@@ -98,7 +98,7 @@ func (c *Client) StationData(station string) (*Station, error) {
 			Line:        r.Line,
 			TrainID:     tID,
 			Status:      strings.TrimSpace(r.Status),
-			SecondsLate: r.SecondsLate,
+			SecondsLate: time.Duration(r.SecondsLate) * time.Second,
 			LineAbbrv:   r.LineAbbreviation,
 			InlineMsg:   r.InlineMsg,
 		}
