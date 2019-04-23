@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-const stationDataEndpoint = "getTrainScheduleXML"
+const (
+	stationDataEndpoint = "getTrainScheduleXML"
+	stationListEndpoint = "getStationListXML"
+)
 
 // A Station provides information about the next trains stopping at a station.
 type Station struct {
@@ -118,6 +121,36 @@ func (c *Client) StationData(station string) (*Station, error) {
 
 	s := &Station{ID: data.Station2Char, Name: data.StationName, Departures: trains}
 	return s, nil
+}
+
+// StationList returns a list of all the stations available.
+func (c *Client) StationList() ([]Station, error) {
+	resp, err := c.fetch(stationListEndpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	data := struct {
+		XMLName xml.Name `xml:"STATIONS"`
+		Station []struct {
+			Name         string `xml:"STATIONNAME"`
+			Station2Char string `xml:"STATION_2CHAR"`
+		} `xml:"STATION"`
+	}{}
+
+	err = xml.Unmarshal(resp, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	stations := []Station{}
+	for _, r := range data.Station {
+		stations = append(stations, Station{
+			Name: r.Name,
+			ID:   r.Station2Char,
+		})
+	}
+	return stations, nil
 }
 
 func parseLatLng(lat, lng string) (*LatLng, error) {
