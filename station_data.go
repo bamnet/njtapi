@@ -1,6 +1,7 @@
 package njtapi
 
 import (
+	"context"
 	"encoding/xml"
 	"strconv"
 	"strings"
@@ -44,8 +45,8 @@ type StationStop struct {
 }
 
 // StationData returns details about upcoming trains stopping at a station.
-func (c *Client) StationData(station string) (*Station, error) {
-	resp, err := c.fetch(stationDataEndpoint, map[string]string{"station": station})
+func (c *Client) StationData(ctx context.Context, station string) (*Station, error) {
+	resp, err := c.fetch(ctx, stationDataEndpoint, map[string]string{"station": station})
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +125,8 @@ func (c *Client) StationData(station string) (*Station, error) {
 }
 
 // StationList returns a list of all the stations available.
-func (c *Client) StationList() ([]Station, error) {
-	resp, err := c.fetch(stationListEndpoint, nil)
+func (c *Client) StationList(ctx context.Context) ([]Station, error) {
+	resp, err := c.fetch(ctx, stationListEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}

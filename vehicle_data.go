@@ -1,6 +1,7 @@
 package njtapi
 
 import (
+	"context"
 	"encoding/xml"
 	"strconv"
 	"strings"
@@ -22,8 +23,8 @@ type Train struct {
 }
 
 // VehicleData returns up the most recent information about trains.
-func (c *Client) VehicleData() ([]Train, error) {
-	resp, err := c.fetch(vehicleDataEndpoint, nil)
+func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
+	resp, err := c.fetch(ctx, vehicleDataEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}

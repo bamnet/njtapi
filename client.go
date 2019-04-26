@@ -2,6 +2,7 @@
 package njtapi
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -32,7 +33,7 @@ func NewCustomClient(c *http.Client, baseURL, username, password string) *Client
 }
 
 // fetch retrieves data from an API endpoint.
-func (c *Client) fetch(endpoint string, params map[string]string) ([]byte, error) {
+func (c *Client) fetch(ctx context.Context, endpoint string, params map[string]string) ([]byte, error) {
 	u, err := url.Parse(c.baseURL)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,11 @@ func (c *Client) fetch(endpoint string, params map[string]string) ([]byte, error
 	}
 	u.RawQuery = q.Encode()
 
-	resp, err := c.httpClient.Get(u.String())
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.httpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}

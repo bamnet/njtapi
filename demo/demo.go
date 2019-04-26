@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -18,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	c := njtapi.NewClient(*baseURL, *username, *password)
-	trains, err := c.VehicleData()
+	trains, err := c.VehicleData(context.Background())
 	if err != nil {
 		log.Fatalf("VehicleData() error: %v", err)
 	}
