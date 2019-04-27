@@ -17,6 +17,7 @@ const (
 type Station struct {
 	ID         string         // Station character code
 	Name       string         // Station name
+	Aliases    []string       // Additional names for this station
 	Departures []StationTrain // Trains departing from this station
 }
 
@@ -147,8 +148,9 @@ func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 	stations := []Station{}
 	for _, r := range data.Station {
 		stations = append(stations, Station{
-			Name: r.Name,
-			ID:   r.Station2Char,
+			Name:    r.Name,
+			ID:      r.Station2Char,
+			Aliases: extraStations[r.Station2Char],
 		})
 	}
 	return stations, nil
