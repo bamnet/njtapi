@@ -1,5 +1,6 @@
 # NJTAPI
 
+[![GoDoc](https://godoc.org/github.com/bamnet/njtapi?status.svg)](https://godoc.org/github.com/bamnet/njtapi)
 [![Build Status](https://travis-ci.com/bamnet/njtapi.svg?branch=master)](https://travis-ci.com/bamnet/njtapi)
 
 NJTAPI provides a Go library for accessing data about NJTransit Trains via their HTTP API.
