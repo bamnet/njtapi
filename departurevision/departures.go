@@ -34,7 +34,7 @@ func NewClient(baseURL string) *Client {
 	return &Client{&http.Client{}, baseURL}
 }
 
-// StationData finds a simplified list of departures given a 2-character station code.
+// Departures finds a simplified list of departures given a 2-character station code.
 //
 // Sample station: NY
 //
@@ -45,7 +45,7 @@ func NewClient(baseURL string) *Client {
 // hour + minute information, not a full date and time.
 // The `Destination` field often includes extra stop indicators and
 // unsupported unicode symbols for the airport and Secaucus Junction.
-func (c *Client) StationData(ctx context.Context, station string) ([]njtapi.StationTrain, error) {
+func (c *Client) Departures(ctx context.Context, station string) ([]njtapi.StationTrain, error) {
 	u, err := url.Parse(c.baseURL)
 	if err != nil {
 		return nil, err

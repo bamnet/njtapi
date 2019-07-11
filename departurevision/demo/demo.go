@@ -17,9 +17,9 @@ func main() {
 	flag.Parse()
 
 	c := dv.NewClient(*baseURL)
-	trains, err := c.StationData(context.Background(), "NY")
+	trains, err := c.Departures(context.Background(), "NY")
 	if err != nil {
-		log.Fatalf("StationData(NY) error: %v", err)
+		log.Fatalf("Departures(NY) error: %v", err)
 	}
 	log.Printf("%+v", trains)
 }
