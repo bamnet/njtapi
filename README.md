@@ -34,4 +34,9 @@ func main() {
 ```
 
 Run [demo.go](demo/demo.go) for a working demo using a command like:
-`go run demo/demo.go --base_url="http://njttraindata_tst.njtransit.com:8090/njttraindata.asmx/" --username=<USERNAME> --password=<PASSWORD>`
+
+```shell
+go run demo/demo.go --base_url="http://njttraindata_tst.njtransit.com:8090/njttraindata.asmx/" --username=<USERNAME> --password=<PASSWORD>
+```
+
+Note: Both of the samples above point to a _testing_ api server, not the production one.
