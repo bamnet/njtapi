@@ -18,6 +18,7 @@ var extraStations = map[string][]string{
 	"PP": []string{"Point Pleasant Beach"},
 	"PJ": []string{"Princeton Junction"},
 	"SE": []string{"Secaucus Upper Lvl"},
+	"TS": []string{"Secaucus Lower Lvl"},
 	"UM": []string{"Upper Montclair"},
 	"WG": []string{"Watchung Avenue"},
 	"WT": []string{"Watsessing Avenue"},
