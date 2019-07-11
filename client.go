@@ -1,4 +1,11 @@
-// Package njtapi provides an API to access NJTransit data.
+// Package njtapi provides an library to access NJTransit Train data.
+//
+// A valid username and password is required to call the NJTransit API.
+// To  register, head on over to https://datasource.njtransit.com/.
+//
+// This library makes opinionated decisions about how data should be sanitized
+// and modeled. As a result, it does not provide a 1:1 mapping of all of
+// features and fields included in the API spec.
 package njtapi
 
 import (

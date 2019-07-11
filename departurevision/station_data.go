@@ -2,7 +2,7 @@
 //
 // Consider this package highly experimental and subject to break without warning
 // due to the fragile parsing logic used here.  Prefer to use the njtapi package
-// whereever possible for a more stable and robust interface.
+// wherever possible for a more stable and robust interface.
 package departurevision
 
 import (
