@@ -70,6 +70,10 @@ func (c *Client) Departures(ctx context.Context, station string) ([]njtapi.Stati
 		"STATUS": -1,
 	}
 
+	if len(table) == 0 {
+		return nil, errors.New("error parsing departurevision table")
+	}
+
 	header := table[0]
 	for i, val := range header {
 		for col := range cols {
