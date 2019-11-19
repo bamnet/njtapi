@@ -4,18 +4,26 @@
 [![Build Status](https://travis-ci.com/bamnet/njtapi.svg?branch=master)](https://travis-ci.com/bamnet/njtapi)
 [![codecov](https://codecov.io/gh/bamnet/njtapi/branch/master/graph/badge.svg)](https://codecov.io/gh/bamnet/njtapi)
 
-NJTAPI provides a Go library for accessing data about NJTransit Trains via their HTTP API.
+NJTAPI is a Go library for accessing data about NJTransit Trains. It wraps the NJTransit HTTP API.
 
 Features include:
 
-*  Departure board style information for each train station.
+*  Timetables and statuses of departures from each station.
 *  Train status including location and stops.
+*  List of all the train stations in the system.
+
+See the [GoDoc](https://godoc.org/github.com/bamnet/njtapi) for full details.
 
 ## Installation
 
 ```go
 import "github.com/bamnet/njtapi"
 ```
+
+## API Access
+
+To get a username and password needed to call the API
+register with the [NJTransit Developer Portal](https://datasource.njtransit.com).
 
 ## Example Usage
 
@@ -29,11 +37,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("StationData() error: %v", err)
 	}
+	fmt.Println("Departures from New York Penn Station")
 	for _, departures := range station.Departures {
 		fmt.Printf("Train to %s at %s", departures.Destination, departures.ScheduledDepartureDate)
 	}
 }
 ```
+
+## Demo
 
 Run [demo.go](demo/demo.go) for a working demo using a command like:
 
