@@ -46,7 +46,7 @@ func TestStationList(t *testing.T) {
 		{ID: "SE", Name: "Secaucus", Aliases: []string{"Secaucus Upper Lvl"}},
 		{ID: "TS", Name: "Secaucus", Aliases: []string{"Secaucus Lower Lvl"}},
 		{ID: "WL", Name: "Woodcliff Lake"},
-		{ID: "SC", Name: "\n    "},
+		{ID: "SC", Name: ""},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("StationList() mismatch (-want +got):\n%s", diff)
@@ -115,7 +115,7 @@ func TestStationData(t *testing.T) {
 						SecondsLate:            4 * time.Minute,
 						LatLng:                 &LatLng{Lat: 40.7706, Lng: -74.0403},
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 16, 45, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 7, 0, 0, loc), Departed: true},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 20, 30, 0, loc), Departed: false},
@@ -143,7 +143,7 @@ func TestStationData(t *testing.T) {
 						ScheduledDepartureDate: time.Date(2019, 11, 18, 20, 31, 30, 0, loc),
 						Track:                  "B",
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 05, 33, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 22, 0, 0, loc), Departed: false},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 31, 0, 0, loc), Departed: false},
@@ -169,7 +169,7 @@ func TestStationData(t *testing.T) {
 						Status:                 "BOARDING",
 						SecondsLate:            -1 * time.Minute,
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 05, 33, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 22, 0, 0, loc), Departed: false},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 31, 0, 0, loc), Departed: false},

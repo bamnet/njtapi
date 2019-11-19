@@ -105,7 +105,7 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 			Status:      strings.TrimSpace(r.Status),
 			SecondsLate: time.Duration(r.SecondsLate) * time.Second,
 			LineAbbrv:   r.LineAbbreviation,
-			InlineMsg:   r.InlineMsg,
+			InlineMsg:   strings.TrimSpace(r.InlineMsg),
 		}
 		train.ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
 		train.LatLngTimestamp, _ = parseTime(r.GPSTime)
@@ -148,7 +148,7 @@ func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 	stations := []Station{}
 	for _, r := range data.Station {
 		stations = append(stations, Station{
-			Name:    r.Name,
+			Name:    strings.TrimSpace(r.Name),
 			ID:      r.Station2Char,
 			Aliases: extraStations[r.Station2Char],
 		})
