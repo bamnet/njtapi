@@ -1,0 +1,140 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<STATION>
+  <STATION_2CHAR>NY</STATION_2CHAR>
+  <STATIONNAME>New York</STATIONNAME>
+  <BANNERMSGS />
+  <ITEMS>
+    <ITEM>
+      <ITEM_INDEX>0</ITEM_INDEX>
+      <SCHED_DEP_DATE>18-Nov-2019 06:25:00 PM</SCHED_DEP_DATE>
+      <DESTINATION>Washington &amp;#9992</DESTINATION>
+      <TRACK>
+      </TRACK>
+      <LINE>REGIONAL</LINE>
+      <TRAIN_ID>A137</TRAIN_ID>
+      <CONNECTING_TRAIN_ID>
+      </CONNECTING_TRAIN_ID>
+      <STATUS>STAND BY</STATUS>
+      <SEC_LATE>8700</SEC_LATE>
+      <LAST_MODIFIED>18-Nov-2019 08:17:46 PM</LAST_MODIFIED>
+      <BACKCOLOR>yellow</BACKCOLOR>
+      <FORECOLOR>black</FORECOLOR>
+      <SHADOWCOLOR>yellow</SHADOWCOLOR>
+      <GPSLATITUDE>40.7455</GPSLATITUDE>
+      <GPSLONGITUDE>-73.9819</GPSLONGITUDE>
+      <GPSTIME>18-Nov-2019 08:17:44 PM</GPSTIME>
+      <STATION_POSITION>0</STATION_POSITION>
+      <LINEABBREVIATION>AMTK</LINEABBREVIATION>
+      <INLINEMSG>
+      </INLINEMSG>
+      <STOPS>
+        <STOP>
+          <NAME>New York</NAME>
+          <TIME>18-Nov-2019 08:50:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>STAND BY</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Newark Penn</NAME>
+          <TIME>18-Nov-2019 09:07:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>2HR 15M LATE</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Newark Airport</NAME>
+          <TIME>18-Nov-2019 09:12:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>2HR 15M LATE</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Metropark</NAME>
+          <TIME>18-Nov-2019 09:26:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>2HR 15M LATE</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Trenton</NAME>
+          <TIME>18-Nov-2019 09:24:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>2 HOURS LATE</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Philadelphia</NAME>
+          <TIME>18-Nov-2019 10:21:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Delayed</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Wilmington</NAME>
+          <TIME>18-Nov-2019 09:55:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Late</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Baltimore</NAME>
+          <TIME>18-Nov-2019 10:05:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Late</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>BWI Airport</NAME>
+          <TIME>18-Nov-2019 10:05:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Late</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>New Carrollton</NAME>
+          <TIME>18-Nov-2019 10:05:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Late</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Washington</NAME>
+          <TIME>18-Nov-2019 11:31:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>Late</STOP_STATUS>
+        </STOP>
+      </STOPS>
+    </ITEM>
+    <ITEM>
+      <ITEM_INDEX>1</ITEM_INDEX>
+      <SCHED_DEP_DATE>18-Nov-2019 08:22:00 PM</SCHED_DEP_DATE>
+      <DESTINATION>Long Branch-BH -SEC &amp;#9992</DESTINATION>
+      <TRACK>7</TRACK>
+      <LINE>North Jersey Coast Line</LINE>
+      <TRAIN_ID>3283</TRAIN_ID>
+      <CONNECTING_TRAIN_ID>4383</CONNECTING_TRAIN_ID>
+      <STATUS>BOARDING</STATUS>
+      <SEC_LATE>-60</SEC_LATE>
+      <LAST_MODIFIED>18-Nov-2019 08:11:44 PM</LAST_MODIFIED>
+      <BACKCOLOR>CornflowerBlue</BACKCOLOR>
+      <FORECOLOR>white</FORECOLOR>
+      <SHADOWCOLOR>black</SHADOWCOLOR>
+      <GPSLATITUDE>
+      </GPSLATITUDE>
+      <GPSLONGITUDE>
+      </GPSLONGITUDE>
+      <GPSTIME>18-Nov-2019 08:05:33 PM</GPSTIME>
+      <STATION_POSITION>0</STATION_POSITION>
+      <LINEABBREVIATION>NJCL</LINEABBREVIATION>
+      <INLINEMSG>
+      </INLINEMSG>
+      <STOPS>
+        <STOP>
+          <NAME>New York Penn Station</NAME>
+          <TIME>18-Nov-2019 08:22:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>BOARDING</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Secaucus Upper Lvl</NAME>
+          <TIME>18-Nov-2019 08:31:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>
+          </STOP_STATUS>
+        </STOP>
+      </STOPS>
+    </ITEM>
+  </ITEMS>
+</STATION>

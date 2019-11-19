@@ -1,0 +1,169 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<STATION>
+  <STATION_2CHAR>SE</STATION_2CHAR>
+  <STATIONNAME>Secaucus</STATIONNAME>
+  <BANNERMSGS />
+  <ITEMS>
+    <ITEM>
+      <ITEM_INDEX>0</ITEM_INDEX>
+      <SCHED_DEP_DATE>18-Nov-2019 08:17:00 PM</SCHED_DEP_DATE>
+      <DESTINATION>Trenton &amp;#9992</DESTINATION>
+      <TRACK>B</TRACK>
+      <LINE>Northeast Corridor Line</LINE>
+      <TRAIN_ID>3883</TRAIN_ID>
+      <CONNECTING_TRAIN_ID>
+      </CONNECTING_TRAIN_ID>
+      <STATUS>in 4 Min</STATUS>
+      <SEC_LATE>240</SEC_LATE>
+      <LAST_MODIFIED>18-Nov-2019 08:16:45 PM</LAST_MODIFIED>
+      <BACKCOLOR>red</BACKCOLOR>
+      <FORECOLOR>white</FORECOLOR>
+      <SHADOWCOLOR>black</SHADOWCOLOR>
+      <GPSLATITUDE>40.7706</GPSLATITUDE>
+      <GPSLONGITUDE>-74.0403</GPSLONGITUDE>
+      <GPSTIME>18-Nov-2019 08:16:45 PM</GPSTIME>
+      <STATION_POSITION>1</STATION_POSITION>
+      <LINEABBREVIATION>NEC</LINEABBREVIATION>
+      <INLINEMSG>
+      </INLINEMSG>
+      <STOPS>
+        <STOP>
+          <NAME>New York Penn Station</NAME>
+          <TIME>18-Nov-2019 08:07:00 PM</TIME>
+          <DEPARTED>YES</DEPARTED>
+          <STOP_STATUS>BOARDING</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Secaucus Upper Lvl</NAME>
+          <TIME>18-Nov-2019 08:20:30 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Newark Penn Station</NAME>
+          <TIME>18-Nov-2019 08:28:45 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Newark Airport</NAME>
+          <TIME>18-Nov-2019 08:35:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>North Elizabeth</NAME>
+          <TIME>18-Nov-2019 08:38:45 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Elizabeth</NAME>
+          <TIME>18-Nov-2019 08:41:30 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Linden</NAME>
+          <TIME>18-Nov-2019 08:46:45 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Rahway</NAME>
+          <TIME>18-Nov-2019 08:51:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Metropark</NAME>
+          <TIME>18-Nov-2019 08:59:45 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Metuchen</NAME>
+          <TIME>18-Nov-2019 09:04:15 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Edison</NAME>
+          <TIME>18-Nov-2019 09:09:15 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>New Brunswick</NAME>
+          <TIME>18-Nov-2019 09:13:30 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Jersey Avenue</NAME>
+          <TIME>18-Nov-2019 09:18:15 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Princeton Junction</NAME>
+          <TIME>18-Nov-2019 09:30:45 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Hamilton</NAME>
+          <TIME>18-Nov-2019 09:37:15 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Trenton</NAME>
+          <TIME>18-Nov-2019 09:50:15 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>OnTime</STOP_STATUS>
+        </STOP>
+      </STOPS>
+    </ITEM>
+    <ITEM>
+      <ITEM_INDEX>1</ITEM_INDEX>
+      <SCHED_DEP_DATE>18-Nov-2019 08:31:30 PM</SCHED_DEP_DATE>
+      <DESTINATION>Long Branch-BH &amp;#9992</DESTINATION>
+      <TRACK>B</TRACK>
+      <LINE>North Jersey Coast Line</LINE>
+      <TRAIN_ID>3283</TRAIN_ID>
+      <CONNECTING_TRAIN_ID>4383</CONNECTING_TRAIN_ID>
+      <STATUS> </STATUS>
+      <SEC_LATE>0</SEC_LATE>
+      <LAST_MODIFIED>18-Nov-2019 08:05:35 PM</LAST_MODIFIED>
+      <BACKCOLOR>CornflowerBlue</BACKCOLOR>
+      <FORECOLOR>white</FORECOLOR>
+      <SHADOWCOLOR>black</SHADOWCOLOR>
+      <GPSLATITUDE>
+      </GPSLATITUDE>
+      <GPSLONGITUDE>
+      </GPSLONGITUDE>
+      <GPSTIME>18-Nov-2019 08:05:33 PM</GPSTIME>
+      <STATION_POSITION>1</STATION_POSITION>
+      <LINEABBREVIATION>NJCL</LINEABBREVIATION>
+      <INLINEMSG>
+      </INLINEMSG>
+      <STOPS>
+        <STOP>
+          <NAME>New York Penn Station</NAME>
+          <TIME>18-Nov-2019 08:22:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>BOARDING</STOP_STATUS>
+        </STOP>
+        <STOP>
+          <NAME>Secaucus Upper Lvl</NAME>
+          <TIME>18-Nov-2019 08:31:00 PM</TIME>
+          <DEPARTED>NO</DEPARTED>
+          <STOP_STATUS>
+          </STOP_STATUS>
+        </STOP>
+      </STOPS>
+    </ITEM>
+  </ITEMS>
+</STATION>
