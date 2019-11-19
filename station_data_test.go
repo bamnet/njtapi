@@ -53,6 +53,19 @@ func TestStationList(t *testing.T) {
 	}
 }
 
+func TestStationListError(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	if _, err := c.StationList(context.Background()); err == nil {
+		t.Error("StationList() expected error, got none.")
+	}
+}
+
 func TestStationData(t *testing.T) {
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
