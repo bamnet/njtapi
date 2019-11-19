@@ -27,6 +27,32 @@ func ExampleClient_StationData() {
 	}
 }
 
+func TestStationList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "testdata/getStationList.xml")
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	got, err := c.StationList(context.Background())
+	if err != nil {
+		t.Errorf("StationList() got unexpected error: %v", err)
+	}
+
+	want := []Station{
+		{ID: "NY", Name: "New York", Aliases: []string{"New York Penn Station"}},
+		{ID: "NP", Name: "Newark Penn", Aliases: []string{"Newark Penn Station"}},
+		{ID: "SE", Name: "Secaucus", Aliases: []string{"Secaucus Upper Lvl"}},
+		{ID: "TS", Name: "Secaucus", Aliases: []string{"Secaucus Lower Lvl"}},
+		{ID: "WL", Name: "Woodcliff Lake"},
+		{ID: "SC", Name: "\n    "},
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("StationList() mismatch (-want +got):\n%s", diff)
+	}
+}
+
 func TestStationData(t *testing.T) {
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
@@ -144,7 +170,7 @@ func TestStationData(t *testing.T) {
 		if err != nil {
 			t.Errorf("StationData(%s) unexpected error: %v", r.station, err)
 		}
-		if diff := cmp.Diff(got, r.want); diff != "" {
+		if diff := cmp.Diff(r.want, got); diff != "" {
 			t.Errorf("StationData(%s) mismatch (-want +got):\n%s", r.station, diff)
 		}
 	}
