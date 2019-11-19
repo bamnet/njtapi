@@ -22,8 +22,8 @@ import "github.com/bamnet/njtapi"
 
 ## API Access
 
-To get a username and password needed to call the API
-register with the [NJTransit Developer Portal](https://datasource.njtransit.com).
+Register with the [NJTransit Developer Portal](https://datasource.njtransit.com)
+to get a username and password needed to call the API.
 
 ## Example Usage
 
