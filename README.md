@@ -20,7 +20,7 @@ import "github.com/bamnet/njtapi"
 
 ```go
 func main() {
-    username := "your username"
+	username := "your username"
 	password := "your password"
 
 	client := NewClient("http://njttraindata_tst.njtransit.com:8090/njttraindata.asmx/", username, password)

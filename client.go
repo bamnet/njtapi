@@ -23,7 +23,7 @@ type Client struct {
 	password   string
 }
 
-// NewClient constructs a new client to talk to the API.
+// NewClient constructs a new client to talk to the NJTransit API.
 //
 // baseURL: The root URL that the API is exposed on.
 // username / password: Authentication credentials for calling the API.
