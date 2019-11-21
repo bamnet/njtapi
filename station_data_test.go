@@ -27,6 +27,45 @@ func ExampleClient_StationData() {
 	}
 }
 
+func TestStationList(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "testdata/getStationList.xml")
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	got, err := c.StationList(context.Background())
+	if err != nil {
+		t.Errorf("StationList() got unexpected error: %v", err)
+	}
+
+	want := []Station{
+		{ID: "NY", Name: "New York", Aliases: []string{"New York Penn Station"}},
+		{ID: "NP", Name: "Newark Penn", Aliases: []string{"Newark Penn Station"}},
+		{ID: "SE", Name: "Secaucus", Aliases: []string{"Secaucus Upper Lvl"}},
+		{ID: "TS", Name: "Secaucus", Aliases: []string{"Secaucus Lower Lvl"}},
+		{ID: "WL", Name: "Woodcliff Lake"},
+		{ID: "SC", Name: ""},
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("StationList() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestStationListError(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	if _, err := c.StationList(context.Background()); err == nil {
+		t.Error("StationList() expected error, got none.")
+	}
+}
+
 func TestStationData(t *testing.T) {
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
@@ -76,7 +115,7 @@ func TestStationData(t *testing.T) {
 						SecondsLate:            4 * time.Minute,
 						LatLng:                 &LatLng{Lat: 40.7706, Lng: -74.0403},
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 16, 45, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 7, 0, 0, loc), Departed: true},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 20, 30, 0, loc), Departed: false},
@@ -104,7 +143,7 @@ func TestStationData(t *testing.T) {
 						ScheduledDepartureDate: time.Date(2019, 11, 18, 20, 31, 30, 0, loc),
 						Track:                  "B",
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 05, 33, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 22, 0, 0, loc), Departed: false},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 31, 0, 0, loc), Departed: false},
@@ -130,7 +169,7 @@ func TestStationData(t *testing.T) {
 						Status:                 "BOARDING",
 						SecondsLate:            -1 * time.Minute,
 						LatLngTimestamp:        time.Date(2019, 11, 18, 20, 05, 33, 0, loc),
-						InlineMsg:              "\n      ",
+						InlineMsg:              "",
 						Stops: []StationStop{
 							{Name: "New York Penn Station", Time: time.Date(2019, 11, 18, 20, 22, 0, 0, loc), Departed: false},
 							{Name: "Secaucus Upper Lvl", Time: time.Date(2019, 11, 18, 20, 31, 0, 0, loc), Departed: false},
@@ -144,7 +183,7 @@ func TestStationData(t *testing.T) {
 		if err != nil {
 			t.Errorf("StationData(%s) unexpected error: %v", r.station, err)
 		}
-		if diff := cmp.Diff(got, r.want); diff != "" {
+		if diff := cmp.Diff(r.want, got); diff != "" {
 			t.Errorf("StationData(%s) mismatch (-want +got):\n%s", r.station, diff)
 		}
 	}
