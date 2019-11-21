@@ -16,7 +16,7 @@ var tz *time.Location
 func init() {
 	var err error
 	// Hardcode the timezone to New York.
-	// While New Jersey and New York are seperate states,
+	// While New Jersey and New York are separate states,
 	// New Jersey would never dream of using a different timezone
 	// than New York without triggering some sort of proxy-war.
 	tz, err = time.LoadLocation("America/New_York")

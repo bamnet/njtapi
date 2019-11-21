@@ -159,6 +159,9 @@ func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 func parseLatLng(lat, lng string) (*LatLng, error) {
 	if lat != " " && lng != " " {
 		lt, err := strconv.ParseFloat(lat, 64)
+		if err != nil {
+			return nil, err
+		}
 		ln, err := strconv.ParseFloat(lng, 64)
 		if err != nil {
 			return nil, err

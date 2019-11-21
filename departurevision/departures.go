@@ -21,7 +21,7 @@ import (
 
 const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
 
-// Client proces access to HTML-based departure information.
+// Client provides access to HTML-based departure information.
 type Client struct {
 	httpClient *http.Client
 	baseURL    string
@@ -154,6 +154,9 @@ func (c *Client) Departures(ctx context.Context, station string) ([]njtapi.Stati
 // extractTable parses out the departure table into a 2d array of strings.
 func (c *Client) extractTable(ctx context.Context, url string) ([][]string, error) {
 	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	// We need to fake a modern user agent here to get a nearly well-formatted reply.
 	// Without this, we get a very old-skool output where each row is its own <table>
 	// and each td has an extra <p> tag too.
