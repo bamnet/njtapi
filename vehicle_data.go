@@ -18,11 +18,12 @@ type Train struct {
 	LastModified           time.Time     // ???
 	ScheduledDepartureTime time.Time     // ???
 	SecondsLate            time.Duration // Train delay
-	NextStop               string        // ???
+	NextStop               string        // Next station the train is stopping at, like "New York" or "Dover".
 	LatLng                 *LatLng       // Last identified latlng
+	TrackCircuit           string        // Track Circuit ID, like "CL-2WAK" or "BC-8251TK".
 }
 
-// VehicleData returns up the most recent information about trains.
+// VehicleData returns up the most recent information about all "active" trains.
 func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 	resp, err := c.fetch(ctx, vehicleDataEndpoint, nil)
 	if err != nil {
@@ -41,6 +42,7 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			NextStop               string  `xml:"NEXT_STOP"`
 			Longitude              float64 `xml:"LONGITUDE"`
 			Latitude               float64 `xml:"LATITUDE"`
+			TrackCircuit           string  `xml:"ICS_TRACK_CKT"`
 		} `xml:"TRAIN"`
 	}{}
 
@@ -60,12 +62,13 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 		}
 
 		trains[i] = Train{
-			ID:          id,
-			Line:        d.Line,
-			Direction:   d.Direction,
-			SecondsLate: time.Duration(d.SecondsLate) * time.Second,
-			NextStop:    d.NextStop,
-			LatLng:      &LatLng{d.Latitude, d.Longitude},
+			ID:           id,
+			Line:         d.Line,
+			Direction:    d.Direction,
+			SecondsLate:  time.Duration(d.SecondsLate) * time.Second,
+			NextStop:     d.NextStop,
+			LatLng:       &LatLng{d.Latitude, d.Longitude},
+			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
 		trains[i].LastModified, _ = parseTime(d.LastModified)
 		trains[i].ScheduledDepartureTime, _ = parseTime(d.ScheduledDepartureTime)

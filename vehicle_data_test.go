@@ -75,6 +75,7 @@ func TestVehicleData(t *testing.T) {
 			ScheduledDepartureTime: time.Date(2019, 11, 19, 0, 40, 0, 0, loc),
 			NextStop:               "Hoboken",
 			LatLng:                 &LatLng{Lat: 40.7347, Lng: -74.0311},
+			TrackCircuit:           "",
 		}, {
 			ID:                     65,
 			Line:                   "Bergen County Line",
@@ -84,6 +85,7 @@ func TestVehicleData(t *testing.T) {
 			SecondsLate:            310 * time.Second,
 			NextStop:               "Port Jervis",
 			LatLng:                 &LatLng{Lat: 41.374876, Lng: -74.694672},
+			TrackCircuit:           "OV-7611TK",
 		},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
