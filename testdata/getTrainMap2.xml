@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Trains>
+  <Train>
+    <Train_ID>5152</Train_ID>
+    <DIRECTION>Eastbound</DIRECTION>
+    <TrainLine>Raritan Valley Line</TrainLine>
+    <LAST_MODIFIED>03-May-2024 08:49:01 PM</LAST_MODIFIED>
+    <BACKCOLOR>#FF993E</BACKCOLOR>
+    <TrackCKT>DK-B128TK</TrackCKT>
+    <latitude>40.7347</latitude>
+    <longitude>-74.1644</longitude>
+    <STOPS />
+  </Train>
+</Trains>

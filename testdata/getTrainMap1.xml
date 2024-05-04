@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Trains>
+  <Train>
+    <Train_ID>3874</Train_ID>
+    <DIRECTION>Eastbound</DIRECTION>
+    <TrainLine>Northeast Corridor Line</TrainLine>
+    <LAST_MODIFIED>03-May-2024 08:47:01 PM</LAST_MODIFIED>
+    <BACKCOLOR>#F7505E</BACKCOLOR>
+    <TrackCKT>AA-141UN</TrackCKT>
+    <latitude>
+    </latitude>
+    <longitude>
+    </longitude>
+    <STOPS />
+  </Train>
+</Trains>

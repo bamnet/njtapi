@@ -3,12 +3,20 @@ package njtapi
 import (
 	"context"
 	"encoding/xml"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const vehicleDataEndpoint = "getVehicleDataXML"
+const (
+	vehicleDataEndpoint = "getVehicleDataXML"
+	trainMapEndpoint    = "getTrainMapXML"
+)
+
+var (
+	ErrTrainNotFound = errors.New("train not found")
+)
 
 // A Train summarizes the latest information about a train.
 type Train struct {
@@ -21,6 +29,60 @@ type Train struct {
 	NextStop               string        // Next station the train is stopping at, like "New York" or "Dover".
 	LatLng                 *LatLng       // Last identified latlng
 	TrackCircuit           string        // Track Circuit ID, like "CL-2WAK" or "BC-8251TK".
+}
+
+// Get information about a specific train.
+//
+// Currently this uses the "getTrainMap" endpoint and should be considered
+// a very experimental feature.
+func (c *Client) GetTrain(ctx context.Context, trainID int) (*Train, error) {
+	resp, err := c.fetch(ctx, trainMapEndpoint, map[string]string{"trainID": strconv.Itoa(trainID), "station": "-"})
+	if err != nil {
+		return nil, err
+	}
+
+	data := struct {
+		XMLName xml.Name `xml:"Trains"`
+		Trains  []struct {
+			ID           string `xml:"Train_ID"`
+			Line         string `xml:"TrainLine"`
+			Direction    string `xml:"DIRECTION"`
+			LastModified string `xml:"LAST_MODIFIED"`
+			Longitude    string `xml:"longitude"`
+			Latitude     string `xml:"latitude"`
+			TrackCircuit string `xml:"TrackCKT"`
+		} `xml:"Train"`
+	}{}
+
+	err = xml.Unmarshal(resp, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	// There is always 1 train returned, even when it doesn't exist.
+	// We use 'Direction' and 'Line' as good signals for a real train.
+	t := data.Trains[0]
+	if t.Direction == "" && t.Line == "" {
+		return nil, ErrTrainNotFound
+	}
+
+	train := Train{
+		ID:           trainID,
+		Line:         t.Line,
+		Direction:    t.Direction,
+		TrackCircuit: t.TrackCircuit,
+	}
+	train.LastModified, _ = parseTime(t.LastModified)
+
+	t.Longitude = strings.TrimSpace(t.Longitude)
+	t.Latitude = strings.TrimSpace(t.Latitude)
+	if t.Longitude != "" && t.Latitude != "" {
+		lat, _ := strconv.ParseFloat(t.Latitude, 64)
+		lng, _ := strconv.ParseFloat(t.Longitude, 64)
+		train.LatLng = &LatLng{lat, lng}
+	}
+
+	return &train, nil
 }
 
 // VehicleData returns up the most recent information about all "active" trains.

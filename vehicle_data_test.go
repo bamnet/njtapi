@@ -92,3 +92,75 @@ func TestVehicleData(t *testing.T) {
 		t.Errorf("VehicleData() mismatch (-want +got):\n%s", diff)
 	}
 }
+
+func TestGetTrain(t *testing.T) {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatalf("Error loading timezones: %v", err)
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			t.Errorf("Error parsing request: %v", err)
+		}
+
+		if u, p := r.Form.Get("username"), r.Form.Get("password"); u != "username" || p != "pa$$word" {
+			t.Errorf("Missing expected username & password: %v", r.Form)
+		}
+		s := r.Form.Get("trainID")
+		switch s {
+		case "3874":
+			http.ServeFile(w, r, "testdata/getTrainMap1.xml")
+		case "5152":
+			http.ServeFile(w, r, "testdata/getTrainMap2.xml")
+		case "999":
+			http.ServeFile(w, r, "testdata/getTrainMapMissing.xml")
+		}
+
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	for _, r := range []struct {
+		trainID int
+		want    *Train
+		wantErr error
+	}{
+		{
+			trainID: 3874,
+			want: &Train{
+				ID:           3874,
+				Line:         "Northeast Corridor Line",
+				Direction:    "Eastbound",
+				LastModified: time.Date(2024, 05, 03, 20, 47, 01, 0, loc),
+				TrackCircuit: "AA-141UN",
+			},
+			wantErr: nil,
+		},
+		{
+			trainID: 5152,
+			want: &Train{
+				ID:           5152,
+				Line:         "Raritan Valley Line",
+				Direction:    "Eastbound",
+				LastModified: time.Date(2024, 05, 03, 20, 49, 01, 0, loc),
+				TrackCircuit: "DK-B128TK",
+				LatLng: &LatLng{
+					Lat: 40.7347,
+					Lng: -74.1644,
+				},
+			},
+			wantErr: nil,
+		},
+		{trainID: 999, want: nil, wantErr: ErrTrainNotFound},
+	} {
+		got, err := c.GetTrain(context.Background(), r.trainID)
+		if err != r.wantErr {
+			t.Errorf("GetTrain(%d) unexpected error: %v", r.trainID, err)
+		}
+		if diff := cmp.Diff(r.want, got); diff != "" {
+			t.Errorf("GetTrain(%d) mismatch (-want +got):\n%s", r.trainID, diff)
+		}
+	}
+}
