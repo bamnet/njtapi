@@ -132,7 +132,7 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			Line:         d.Line,
 			Direction:    d.Direction,
 			SecondsLate:  time.Duration(d.SecondsLate) * time.Second,
-			NextStop:     d.NextStop,
+			NextStop:     strings.TrimSpace(d.NextStop),
 			LatLng:       &LatLng{lat, lng},
 			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
