@@ -95,16 +95,16 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 	data := struct {
 		XMLName xml.Name `xml:"TRAINS"`
 		Trains  []struct {
-			ID                     string  `xml:"ID"`
-			Line                   string  `xml:"TRAIN_LINE"`
-			Direction              string  `xml:"DIRECTION"`
-			LastModified           string  `xml:"LAST_MODIFIED"`
-			ScheduledDepartureTime string  `xml:"SCHED_DEP_TIME"`
-			SecondsLate            int     `xml:"SEC_LATE"`
-			NextStop               string  `xml:"NEXT_STOP"`
-			Longitude              float64 `xml:"LONGITUDE"`
-			Latitude               float64 `xml:"LATITUDE"`
-			TrackCircuit           string  `xml:"ICS_TRACK_CKT"`
+			ID                     string `xml:"ID"`
+			Line                   string `xml:"TRAIN_LINE"`
+			Direction              string `xml:"DIRECTION"`
+			LastModified           string `xml:"LAST_MODIFIED"`
+			ScheduledDepartureTime string `xml:"SCHED_DEP_TIME"`
+			SecondsLate            int    `xml:"SEC_LATE"`
+			NextStop               string `xml:"NEXT_STOP"`
+			Longitude              string `xml:"LONGITUDE"`
+			Latitude               string `xml:"LATITUDE"`
+			TrackCircuit           string `xml:"ICS_TRACK_CKT"`
 		} `xml:"TRAIN"`
 	}{}
 
@@ -123,13 +123,17 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			return nil, err
 		}
 
+		// Sometimes the lat lng fields contain " ".
+		lat, _ := parseDegrees(d.Latitude)
+		lng, _ := parseDegrees(d.Longitude)
+
 		trains[i] = Train{
 			ID:           id,
 			Line:         d.Line,
 			Direction:    d.Direction,
 			SecondsLate:  time.Duration(d.SecondsLate) * time.Second,
 			NextStop:     d.NextStop,
-			LatLng:       &LatLng{d.Latitude, d.Longitude},
+			LatLng:       &LatLng{lat, lng},
 			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
 		trains[i].LastModified, _ = parseTime(d.LastModified)

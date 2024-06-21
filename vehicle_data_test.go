@@ -86,6 +86,16 @@ func TestVehicleData(t *testing.T) {
 			NextStop:               "Port Jervis",
 			LatLng:                 &LatLng{Lat: 41.374876, Lng: -74.694672},
 			TrackCircuit:           "OV-7611TK",
+		}, {
+			ID:                     6659,
+			Line:                   "Morris & Essex Line",
+			Direction:              "Westbound",
+			LastModified:           time.Date(2024, 06, 20, 21, 31, 52, 0, loc),
+			ScheduledDepartureTime: time.Date(2024, 06, 20, 19, 03, 45, 0, loc),
+			SecondsLate:            34 * time.Minute,
+			NextStop:               " ",
+			LatLng:                 &LatLng{},
+			TrackCircuit:           "EE-41UP",
 		},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {

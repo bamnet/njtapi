@@ -2,6 +2,8 @@ package njtapi
 
 import (
 	"log"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -28,4 +30,10 @@ func init() {
 // Convert a timestamp returned from the API to a time.Time.
 func parseTime(ts string) (time.Time, error) {
 	return time.ParseInLocation("02-Jan-2006 03:04:05 PM", ts, tz)
+}
+
+// Convert a lat or long string to an actual number.
+func parseDegrees(degrees string) (float64, error) {
+	trim := strings.TrimSpace(degrees)
+	return strconv.ParseFloat(trim, 64)
 }
