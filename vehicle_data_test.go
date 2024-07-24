@@ -174,3 +174,53 @@ func TestGetTrain(t *testing.T) {
 		}
 	}
 }
+
+func TestGetTrainStops(t *testing.T) {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatalf("Error loading timezones: %v", err)
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			t.Errorf("Error parsing request: %v", err)
+		}
+
+		if u, p := r.Form.Get("username"), r.Form.Get("password"); u != "username" || p != "pa$$word" {
+			t.Errorf("Missing expected username & password: %v", r.Form)
+		}
+		s := r.Form.Get("trainID")
+		switch s {
+		case "1085":
+			http.ServeFile(w, r, "testdata/getTrainStopList1.xml")
+		}
+
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+
+	for _, r := range []struct {
+		trainID int
+		want    *Train
+		wantErr error
+	}{
+		{
+			trainID: 1085,
+			want: &Train{
+				ID:           1085,
+				LastModified: time.Date(2024, 07, 23, 20, 24, 35, 0, loc),
+				LatLng:       &LatLng{Lat: 40.9113, Lng: -74.2654},
+			},
+			wantErr: nil,
+		},
+	} {
+		got, err := c.getTrainStops(context.Background(), r.trainID)
+		if err != r.wantErr {
+			t.Errorf("GetTrain(%d) unexpected error: %v", r.trainID, err)
+		}
+		if diff := cmp.Diff(r.want, got); diff != "" {
+			t.Errorf("GetTrain(%d) mismatch (-want +got):\n%s", r.trainID, diff)
+		}
+	}
+}

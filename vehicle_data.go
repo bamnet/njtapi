@@ -12,6 +12,7 @@ import (
 const (
 	vehicleDataEndpoint = "getVehicleDataXML"
 	trainMapEndpoint    = "getTrainMapXML"
+	trainStopsEndpoint  = "getTrainStopListXML"
 )
 
 var (
@@ -36,6 +37,11 @@ type Train struct {
 // Currently this uses the "getTrainMap" endpoint and should be considered
 // a very experimental feature.
 func (c *Client) GetTrain(ctx context.Context, trainID int) (*Train, error) {
+	return c.getTrainMap(ctx, trainID)
+}
+
+// Get information about a specific train from the "Map" API endpoint.
+func (c *Client) getTrainMap(ctx context.Context, trainID int) (*Train, error) {
 	resp, err := c.fetch(ctx, trainMapEndpoint, map[string]string{"trainID": strconv.Itoa(trainID), "station": "-"})
 	if err != nil {
 		return nil, err
@@ -79,6 +85,47 @@ func (c *Client) GetTrain(ctx context.Context, trainID int) (*Train, error) {
 	if t.Longitude != "" && t.Latitude != "" {
 		lat, _ := strconv.ParseFloat(t.Latitude, 64)
 		lng, _ := strconv.ParseFloat(t.Longitude, 64)
+		train.LatLng = &LatLng{lat, lng}
+	}
+
+	return &train, nil
+}
+
+// Get information about a specific train from the "Stops" API endpoint.
+func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error) {
+	resp, err := c.fetch(ctx, trainStopsEndpoint, map[string]string{"trainID": strconv.Itoa(trainID)})
+	if err != nil {
+		return nil, err
+	}
+
+	data := struct {
+		XMLName     xml.Name `xml:"Train"`
+		ID          string   `xml:"Train_ID"`
+		Destination string   `xml:"DESTINATION"`
+		GPSTime     string   `xml:"GPSTIME"`
+		Longitude   string   `xml:"GPSLONGITUDE"`
+		Latitude    string   `xml:"GPSLATITUDE"`
+	}{}
+
+	err = xml.Unmarshal(resp, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	if data.ID == "" {
+		return nil, ErrTrainNotFound
+	}
+
+	train := Train{
+		ID: trainID,
+	}
+	train.LastModified, _ = parseTime(data.GPSTime)
+
+	data.Longitude = strings.TrimSpace(data.Longitude)
+	data.Latitude = strings.TrimSpace(data.Latitude)
+	if data.Longitude != "" && data.Latitude != "" {
+		lat, _ := strconv.ParseFloat(data.Latitude, 64)
+		lng, _ := strconv.ParseFloat(data.Longitude, 64)
 		train.LatLng = &LatLng{lat, lng}
 	}
 
