@@ -1,7 +1,7 @@
 # NJTAPI
 
 [![GoDoc](https://godoc.org/github.com/bamnet/njtapi?status.svg)](https://godoc.org/github.com/bamnet/njtapi)
-[![Build Status](https://travis-ci.com/bamnet/njtapi.svg?branch=master)](https://travis-ci.com/bamnet/njtapi)
+[![Build Status](https://github.com/bamnet/njtapi/actions/workflows/test.yaml/badge.svg)](https://github.com/bamnet/njtapi/actions)
 [![codecov](https://codecov.io/gh/bamnet/njtapi/branch/master/graph/badge.svg)](https://codecov.io/gh/bamnet/njtapi)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bamnet/njtapi)](https://goreportcard.com/report/github.com/bamnet/njtapi)
 [![GitHub](https://img.shields.io/github/license/bamnet/njtapi)](https://github.com/bamnet/njtapi/blob/master/LICENSE)
