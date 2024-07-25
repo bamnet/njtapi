@@ -114,9 +114,8 @@ func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error)
 			Status        string `xml:"STOP_STATUS"`
 			DepartureTime string `xml:"DEP_TIME"`
 			Lines         []struct {
-				Code  string `xml:"LINE_CODE"`
-				Name  string `xml:"LINE_NAME"`
-				Color string `xml:"LINE_COLOR"`
+				Code string `xml:"LINE_CODE"`
+				Name string `xml:"LINE_NAME"`
 			} `xml:"STOP_LINES>STOP_LINE"`
 		} `xml:"STOPS>STOP"`
 	}{}
@@ -150,6 +149,14 @@ func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error)
 			Departed: (s.Departed == "YES"),
 		}
 		stop.Time, _ = parseTime(s.Time)
+		stop.DepartureTime, _ = parseTime(s.DepartureTime)
+
+		if len(s.Lines) > 0 {
+			stop.Lines = make([]Line, len(s.Lines))
+			for i, l := range s.Lines {
+				stop.Lines[i] = Line{Name: l.Name}
+			}
+		}
 		train.Stops = append(train.Stops, stop)
 	}
 

@@ -17,29 +17,14 @@
           <LINE_COLOR>#98A8BF</LINE_COLOR>
         </STOP_LINE>
         <STOP_LINE>
-          <LINE_CODE>GS</LINE_CODE>
-          <LINE_NAME>Gladstone Branch</LINE_NAME>
-          <LINE_COLOR>#A1D5AE</LINE_COLOR>
-        </STOP_LINE>
-        <STOP_LINE>
           <LINE_CODE>ME</LINE_CODE>
           <LINE_NAME>ME Line</LINE_NAME>
           <LINE_COLOR>#00953B</LINE_COLOR>
         </STOP_LINE>
         <STOP_LINE>
-          <LINE_CODE>ML</LINE_CODE>
-          <LINE_NAME>Main Line</LINE_NAME>
-          <LINE_COLOR>#F2B826</LINE_COLOR>
-        </STOP_LINE>
-        <STOP_LINE>
           <LINE_CODE>NC</LINE_CODE>
           <LINE_NAME>North Jersey Coast Line</LINE_NAME>
           <LINE_COLOR>#009CDB</LINE_COLOR>
-        </STOP_LINE>
-        <STOP_LINE>
-          <LINE_CODE>PV</LINE_CODE>
-          <LINE_NAME>Pascack Valley Line</LINE_NAME>
-          <LINE_COLOR>#A34F8B</LINE_COLOR>
         </STOP_LINE>
       </STOP_LINES>
     </STOP>
