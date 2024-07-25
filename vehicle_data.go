@@ -30,6 +30,7 @@ type Train struct {
 	NextStop               string        // Next station the train is stopping at, like "New York" or "Dover".
 	LatLng                 *LatLng       // Last identified latlng
 	TrackCircuit           string        // Track Circuit ID, like "CL-2WAK" or "BC-8251TK".
+	Stops                  []StationStop // Stations the train stops at.
 }
 
 // Get information about a specific train.
@@ -105,6 +106,19 @@ func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error)
 		GPSTime     string   `xml:"GPSTIME"`
 		Longitude   string   `xml:"GPSLONGITUDE"`
 		Latitude    string   `xml:"GPSLATITUDE"`
+		Stops       []struct {
+			Name          string `xml:"NAME"`
+			Station2Char  string `xml:"STATION_2CHAR"`
+			Time          string `xml:"TIME"`
+			Departed      string `xml:"DEPARTED"`
+			Status        string `xml:"STOP_STATUS"`
+			DepartureTime string `xml:"DEP_TIME"`
+			Lines         []struct {
+				Code  string `xml:"LINE_CODE"`
+				Name  string `xml:"LINE_NAME"`
+				Color string `xml:"LINE_COLOR"`
+			} `xml:"STOP_LINES>STOP_LINE"`
+		} `xml:"STOPS>STOP"`
 	}{}
 
 	err = xml.Unmarshal(resp, &data)
@@ -117,7 +131,8 @@ func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error)
 	}
 
 	train := Train{
-		ID: trainID,
+		ID:    trainID,
+		Stops: []StationStop{},
 	}
 	train.LastModified, _ = parseTime(data.GPSTime)
 
@@ -127,6 +142,15 @@ func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error)
 		lat, _ := strconv.ParseFloat(data.Latitude, 64)
 		lng, _ := strconv.ParseFloat(data.Longitude, 64)
 		train.LatLng = &LatLng{lat, lng}
+	}
+
+	for _, s := range data.Stops {
+		stop := StationStop{
+			Name:     s.Name,
+			Departed: (s.Departed == "YES"),
+		}
+		stop.Time, _ = parseTime(s.Time)
+		train.Stops = append(train.Stops, stop)
 	}
 
 	return &train, nil

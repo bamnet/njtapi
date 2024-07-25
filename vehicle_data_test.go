@@ -211,6 +211,13 @@ func TestGetTrainStops(t *testing.T) {
 				ID:           1085,
 				LastModified: time.Date(2024, 07, 23, 20, 24, 35, 0, loc),
 				LatLng:       &LatLng{Lat: 40.9113, Lng: -74.2654},
+				Stops: []StationStop{
+					{Name: "Hoboken", Departed: true, Time: time.Date(2024, 07, 23, 19, 22, 00, 0, loc)},
+					{Name: "Newark Broad Street", Departed: true, Time: time.Date(2024, 07, 23, 19, 39, 00, 0, loc)},
+					{Name: "Watsessing Avenue", Departed: true, Time: time.Date(2024, 07, 23, 19, 47, 10, 0, loc)},
+					{Name: "Mountain View", Departed: false, Time: time.Date(2024, 07, 23, 20, 24, 22, 0, loc)},
+					{Name: "Hackettstown", Departed: false, Time: time.Date(2024, 07, 23, 21, 26, 0, 0, loc)},
+				},
 			},
 			wantErr: nil,
 		},
