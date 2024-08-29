@@ -196,6 +196,10 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 		// Remove any "a" (amtrak) suffix from the ID.
 		d.ID = strings.TrimSuffix(d.ID, "a")
 
+		// Remove any "." prefixes from the ID.
+		// https://github.com/bamnet/njtapi/issues/7
+		d.ID = strings.TrimPrefix(d.ID, ".")
+
 		id, err := strconv.Atoi(d.ID)
 		if err != nil {
 			return nil, err

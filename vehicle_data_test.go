@@ -96,6 +96,14 @@ func TestVehicleData(t *testing.T) {
 			NextStop:               "",
 			LatLng:                 &LatLng{},
 			TrackCircuit:           "EE-41UP",
+		}, {
+			ID:                     5193,
+			Line:                   "Raritan Valley Line",
+			Direction:              "Westbound",
+			LastModified:           time.Date(2024, 8, 28, 20, 54, 29, 0, loc),
+			ScheduledDepartureTime: time.Date(2024, 8, 28, 21, 52, 00, 0, loc),
+			NextStop:               "Bound Brook",
+			LatLng:                 &LatLng{Lat: 40.56055, Lng: -74.538},
 		},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
