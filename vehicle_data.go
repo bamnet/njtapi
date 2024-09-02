@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,8 @@ const (
 
 var (
 	ErrTrainNotFound = errors.New("train not found")
+
+	trainIDRe = regexp.MustCompile(`(\d+)`)
 )
 
 // A Train summarizes the latest information about a train.
@@ -193,12 +196,13 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 
 	trains := make([]Train, len(data.Trains))
 	for i, d := range data.Trains {
-		// Remove any "a" (amtrak) suffix from the ID.
-		d.ID = strings.TrimSuffix(d.ID, "a")
-
-		// Remove any "." prefixes from the ID.
+		// Use a Regex to extract the numbers from the ID.
+		// Some trains have an "a" (amtrak suffix). Others
+		// randomly have leading or trailing ".".
+		//
 		// https://github.com/bamnet/njtapi/issues/7
-		d.ID = strings.TrimPrefix(d.ID, ".")
+		idM := trainIDRe.FindStringSubmatch(d.ID)
+		d.ID = idM[1]
 
 		id, err := strconv.Atoi(d.ID)
 		if err != nil {
