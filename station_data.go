@@ -41,9 +41,9 @@ type StationTrain struct {
 // A StationStop is a stop this train will make, or has made, on it's route.
 type StationStop struct {
 	Name          string    // Station stop name
-	Time          time.Time // Estimated arrival time at this stop
+	Time          time.Time // Actual (if already left) or planned (if upcoming) departure time from this stop
 	Departed      bool      // Indicates if the train has departed the stop or not
-	DepartureTime time.Time // Time the train departed this station
+	DepartureTime time.Time // Time the train was intially scheduled to depart this station
 	Lines         []Line    // Connecting lines available at this station
 }
 
