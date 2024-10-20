@@ -111,7 +111,7 @@ func TestVehicleData(t *testing.T) {
 	}
 }
 
-func TestGetTrain(t *testing.T) {
+func TestGetTrainMap(t *testing.T) {
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		t.Fatalf("Error loading timezones: %v", err)
@@ -173,7 +173,7 @@ func TestGetTrain(t *testing.T) {
 		},
 		{trainID: 999, want: nil, wantErr: ErrTrainNotFound},
 	} {
-		got, err := c.GetTrain(context.Background(), r.trainID)
+		got, err := c.GetTrainMap(context.Background(), r.trainID)
 		if err != r.wantErr {
 			t.Errorf("GetTrain(%d) unexpected error: %v", r.trainID, err)
 		}
@@ -258,7 +258,7 @@ func TestGetTrainStops(t *testing.T) {
 			wantErr: nil,
 		},
 	} {
-		got, err := c.getTrainStops(context.Background(), r.trainID)
+		got, err := c.GetTrainStops(context.Background(), r.trainID)
 		if err != r.wantErr {
 			t.Errorf("GetTrain(%d) unexpected error: %v", r.trainID, err)
 		}

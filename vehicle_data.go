@@ -36,16 +36,12 @@ type Train struct {
 	Stops                  []StationStop // Stations the train stops at.
 }
 
-// Get information about a specific train.
-//
-// Currently this uses the "getTrainMap" endpoint and should be considered
-// a very experimental feature.
-func (c *Client) GetTrain(ctx context.Context, trainID int) (*Train, error) {
-	return c.getTrainMap(ctx, trainID)
-}
-
 // Get information about a specific train from the "Map" API endpoint.
-func (c *Client) getTrainMap(ctx context.Context, trainID int) (*Train, error) {
+//
+// The `Train` object returned will not have all the fields set. It will
+// typically only have `ID`, `Line`, `Direction`, `LastModified`, `LatLng`,
+// and `TrackCircuit`.
+func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 	resp, err := c.fetch(ctx, trainMapEndpoint, map[string]string{"trainID": strconv.Itoa(trainID), "station": "-"})
 	if err != nil {
 		return nil, err
@@ -96,7 +92,10 @@ func (c *Client) getTrainMap(ctx context.Context, trainID int) (*Train, error) {
 }
 
 // Get information about a specific train from the "Stops" API endpoint.
-func (c *Client) getTrainStops(ctx context.Context, trainID int) (*Train, error) {
+//
+// The `Train` object returned will not have all the fields set. It will
+// typically only have `ID`, `LastModified`, `LatLng`, and `Stops`.
+func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error) {
 	resp, err := c.fetch(ctx, trainStopsEndpoint, map[string]string{"trainID": strconv.Itoa(trainID)})
 	if err != nil {
 		return nil, err
