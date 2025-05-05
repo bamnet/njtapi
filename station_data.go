@@ -45,6 +45,7 @@ type StationStop struct {
 	Departed      bool      // Indicates if the train has departed the stop or not
 	DepartureTime time.Time // Time the train was intially scheduled to depart this station
 	Lines         []Line    // Connecting lines available at this station
+	Status        string    // Current status of the train at this stop
 }
 
 // A Line is train line, like the North Jersey Coast Line.

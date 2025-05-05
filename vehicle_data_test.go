@@ -226,6 +226,7 @@ func TestGetTrainStops(t *testing.T) {
 						Time:          time.Date(2024, 07, 23, 19, 22, 00, 0, loc),
 						DepartureTime: time.Date(2024, 07, 23, 19, 22, 00, 0, loc),
 						Lines:         []Line{{"Bergen County Line"}, {"ME Line"}, {"North Jersey Coast Line"}},
+						Status:        "OnTime",
 					},
 					{
 						Name:          "Newark Broad Street",
@@ -233,18 +234,21 @@ func TestGetTrainStops(t *testing.T) {
 						Time:          time.Date(2024, 07, 23, 19, 39, 00, 0, loc),
 						DepartureTime: time.Date(2024, 07, 23, 19, 39, 00, 0, loc),
 						Lines:         []Line{{"Gladstone Branch"}, {"ME Line"}},
+						Status:        "OnTime",
 					},
 					{
 						Name:          "Watsessing Avenue",
 						Departed:      true,
 						Time:          time.Date(2024, 07, 23, 19, 47, 10, 0, loc),
 						DepartureTime: time.Date(2024, 07, 23, 19, 45, 30, 0, loc),
+						Status:        "OnTime",
 					},
 					{
 						Name:          "Mountain View",
 						Departed:      false,
 						Time:          time.Date(2024, 07, 23, 20, 24, 22, 0, loc),
 						DepartureTime: time.Date(2024, 07, 23, 20, 23, 0, 0, loc),
+						Status:        "OnTime",
 					},
 					{
 						Name:          "Hackettstown",
@@ -252,6 +256,7 @@ func TestGetTrainStops(t *testing.T) {
 						Time:          time.Date(2024, 07, 23, 21, 26, 0, 0, loc),
 						DepartureTime: time.Date(2024, 07, 23, 21, 26, 0, 0, loc),
 						Lines:         []Line{{"ME Line"}},
+						Status:        "Delayed",
 					},
 				},
 			},

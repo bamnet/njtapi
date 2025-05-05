@@ -149,6 +149,7 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 		stop := StationStop{
 			Name:     s.Name,
 			Departed: (s.Departed == "YES"),
+			Status:   s.Status,
 		}
 		stop.Time, _ = parseTime(s.Time)
 		stop.DepartureTime, _ = parseTime(s.DepartureTime)
