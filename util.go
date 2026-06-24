@@ -37,3 +37,22 @@ func parseDegrees(degrees string) (float64, error) {
 	trim := strings.TrimSpace(degrees)
 	return strconv.ParseFloat(trim, 64)
 }
+
+// parseLatLng parses latitude and longitude strings and returns a LatLng object.
+// If either coordinate is empty or whitespace-only, it returns nil, nil.
+func parseLatLng(lat, lng string) (*LatLng, error) {
+	lat = strings.TrimSpace(lat)
+	lng = strings.TrimSpace(lng)
+	if lat == "" || lng == "" {
+		return nil, nil
+	}
+	lt, err := parseDegrees(lat)
+	if err != nil {
+		return nil, err
+	}
+	ln, err := parseDegrees(lng)
+	if err != nil {
+		return nil, err
+	}
+	return &LatLng{Lat: lt, Lng: ln}, nil
+}

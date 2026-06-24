@@ -3,6 +3,8 @@ package njtapi
 import (
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestParseTime(t *testing.T) {
@@ -15,6 +17,51 @@ func TestParseTime(t *testing.T) {
 	} {
 		if got, _ := parseTime(r.timestamp); got != r.time {
 			t.Errorf("parseTime(%s) got %v want %v", r.timestamp, got, r.time)
+		}
+	}
+}
+
+func TestParseDegrees(t *testing.T) {
+	for _, r := range []struct {
+		input   string
+		want    float64
+		wantErr bool
+	}{
+		{" 40.7347 ", 40.7347, false},
+		{"-74.0311", -74.0311, false},
+		{"abc", 0, true},
+		{"", 0, true},
+	} {
+		got, err := parseDegrees(r.input)
+		if (err != nil) != r.wantErr {
+			t.Errorf("parseDegrees(%q) error status got %v wantErr %v", r.input, err != nil, r.wantErr)
+		}
+		if got != r.want {
+			t.Errorf("parseDegrees(%q) got %v want %v", r.input, got, r.want)
+		}
+	}
+}
+
+func TestParseLatLng(t *testing.T) {
+	for _, r := range []struct {
+		lat     string
+		lng     string
+		want    *LatLng
+		wantErr bool
+	}{
+		{"40.7347", "-74.0311", &LatLng{Lat: 40.7347, Lng: -74.0311}, false},
+		{" ", " ", nil, false},
+		{"", "", nil, false},
+		{"40.7347", " ", nil, false},
+		{"40.7347", "abc", nil, true},
+		{"abc", "-74.0311", nil, true},
+	} {
+		got, err := parseLatLng(r.lat, r.lng)
+		if (err != nil) != r.wantErr {
+			t.Errorf("parseLatLng(%q, %q) error status got %v wantErr %v", r.lat, r.lng, err != nil, r.wantErr)
+		}
+		if diff := cmp.Diff(r.want, got); diff != "" {
+			t.Errorf("parseLatLng(%q, %q) mismatch (-want +got):\n%s", r.lat, r.lng, diff)
 		}
 	}
 }
