@@ -94,7 +94,6 @@ func TestVehicleData(t *testing.T) {
 			ScheduledDepartureTime: time.Date(2024, 06, 20, 19, 03, 45, 0, loc),
 			SecondsLate:            34 * time.Minute,
 			NextStop:               "",
-			LatLng:                 &LatLng{},
 			TrackCircuit:           "EE-41UP",
 		}, {
 			ID:                     5193,

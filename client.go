@@ -46,7 +46,7 @@ func (c *Client) fetch(ctx context.Context, endpoint string, params map[string]s
 		return nil, err
 	}
 
-	u.Path = u.Path + endpoint
+	u = u.JoinPath(endpoint)
 	q := u.Query()
 	q.Set("username", c.username)
 	q.Set("password", c.password)

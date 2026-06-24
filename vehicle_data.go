@@ -80,13 +80,7 @@ func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 	}
 	train.LastModified, _ = parseTime(t.LastModified)
 
-	t.Longitude = strings.TrimSpace(t.Longitude)
-	t.Latitude = strings.TrimSpace(t.Latitude)
-	if t.Longitude != "" && t.Latitude != "" {
-		lat, _ := strconv.ParseFloat(t.Latitude, 64)
-		lng, _ := strconv.ParseFloat(t.Longitude, 64)
-		train.LatLng = &LatLng{lat, lng}
-	}
+	train.LatLng, _ = parseLatLng(t.Latitude, t.Longitude)
 
 	return &train, nil
 }
@@ -137,13 +131,7 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 	}
 	train.LastModified, _ = parseTime(data.GPSTime)
 
-	data.Longitude = strings.TrimSpace(data.Longitude)
-	data.Latitude = strings.TrimSpace(data.Latitude)
-	if data.Longitude != "" && data.Latitude != "" {
-		lat, _ := strconv.ParseFloat(data.Latitude, 64)
-		lng, _ := strconv.ParseFloat(data.Longitude, 64)
-		train.LatLng = &LatLng{lat, lng}
-	}
+	train.LatLng, _ = parseLatLng(data.Latitude, data.Longitude)
 
 	for _, s := range data.Stops {
 		stop := StationStop{
@@ -194,14 +182,17 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 		return nil, err
 	}
 
-	trains := make([]Train, len(data.Trains))
-	for i, d := range data.Trains {
+	trains := make([]Train, 0, len(data.Trains))
+	for _, d := range data.Trains {
 		// Use a Regex to extract the numbers from the ID.
 		// Some trains have an "a" (amtrak suffix). Others
 		// randomly have leading or trailing ".".
 		//
 		// https://github.com/bamnet/njtapi/issues/7
 		idM := trainIDRe.FindStringSubmatch(d.ID)
+		if len(idM) < 2 {
+			continue
+		}
 		d.ID = idM[1]
 
 		id, err := strconv.Atoi(d.ID)
@@ -209,21 +200,20 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			return nil, err
 		}
 
-		// Sometimes the lat lng fields contain " ".
-		lat, _ := parseDegrees(d.Latitude)
-		lng, _ := parseDegrees(d.Longitude)
+		latlng, _ := parseLatLng(d.Latitude, d.Longitude)
 
-		trains[i] = Train{
+		t := Train{
 			ID:           id,
 			Line:         d.Line,
 			Direction:    d.Direction,
 			SecondsLate:  time.Duration(d.SecondsLate) * time.Second,
 			NextStop:     strings.TrimSpace(d.NextStop),
-			LatLng:       &LatLng{lat, lng},
+			LatLng:       latlng,
 			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
-		trains[i].LastModified, _ = parseTime(d.LastModified)
-		trains[i].ScheduledDepartureTime, _ = parseTime(d.ScheduledDepartureTime)
+		t.LastModified, _ = parseTime(d.LastModified)
+		t.ScheduledDepartureTime, _ = parseTime(d.ScheduledDepartureTime)
+		trains = append(trains, t)
 	}
 	return removeDupTrains(trains), nil
 }
