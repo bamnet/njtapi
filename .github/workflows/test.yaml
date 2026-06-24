@@ -13,7 +13,7 @@ jobs:
         uses: actions/setup-go@v3
 
       - name: Run golangci-lint
-        uses: golangci-lint/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
 
