@@ -197,8 +197,7 @@ func TestGetTrainStops(t *testing.T) {
 			t.Errorf("Missing expected username & password: %v", r.Form)
 		}
 		s := r.Form.Get("trainID")
-		switch s {
-		case "1085":
+		if s == "1085" {
 			http.ServeFile(w, r, "testdata/getTrainStopList1.xml")
 		}
 

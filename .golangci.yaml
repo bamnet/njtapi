@@ -1,0 +1,23 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck     # Checks for unchecked errors
+    - gosimple     # Linter for Go code simplification
+    - govet        # Standard Go tool analysis
+    - ineffassign  # Detects ineffectual assignments
+    - staticcheck  # General static analysis
+    - unused       # Finds unused constants, variables, functions and types
+    - revive       # Stylistic convention checks
+    - gosec        # Security analyzer
+    - gocritic     # Readability and performance micro-recommendations
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        severity: warning
