@@ -24,7 +24,7 @@ func TestFetchSuccess(t *testing.T) {
 func TestFetchNotFound(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("station not found"))
+		_, _ = w.Write([]byte("station not found"))
 	}))
 	defer ts.Close()
 
@@ -54,7 +54,7 @@ func TestFetchNotFound(t *testing.T) {
 func TestFetchInternalServerError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("internal error"))
+		_, _ = w.Write([]byte("internal error"))
 	}))
 	defer ts.Close()
 
