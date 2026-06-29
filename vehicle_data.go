@@ -34,6 +34,7 @@ type Train struct {
 	LatLng                 *LatLng       // Last identified latlng
 	TrackCircuit           string        // Track Circuit ID, like "CL-2WAK" or "BC-8251TK".
 	Stops                  []StationStop // Stations the train stops at.
+	ParseErrors            []error       // Errors encountered while parsing this train
 }
 
 // Get information about a specific train from the "Map" API endpoint.
@@ -78,9 +79,19 @@ func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 		Direction:    t.Direction,
 		TrackCircuit: t.TrackCircuit,
 	}
-	train.LastModified, _ = parseTime(t.LastModified)
+	train.LastModified, err = parseTime(t.LastModified)
+	if err != nil {
+		train.ParseErrors = append(train.ParseErrors, &ParseError{
+			Field: "LAST_MODIFIED", Value: t.LastModified, Err: err,
+		})
+	}
 
-	train.LatLng, _ = parseLatLng(t.Latitude, t.Longitude)
+	train.LatLng, err = parseLatLng(t.Latitude, t.Longitude)
+	if err != nil {
+		train.ParseErrors = append(train.ParseErrors, &ParseError{
+			Field: "LatLng", Value: t.Latitude + "," + t.Longitude, Err: err,
+		})
+	}
 
 	return &train, nil
 }
@@ -129,9 +140,19 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 		ID:    trainID,
 		Stops: []StationStop{},
 	}
-	train.LastModified, _ = parseTime(data.GPSTime)
+	train.LastModified, err = parseTime(data.GPSTime)
+	if err != nil {
+		train.ParseErrors = append(train.ParseErrors, &ParseError{
+			Field: "GPSTIME", Value: data.GPSTime, Err: err,
+		})
+	}
 
-	train.LatLng, _ = parseLatLng(data.Latitude, data.Longitude)
+	train.LatLng, err = parseLatLng(data.Latitude, data.Longitude)
+	if err != nil {
+		train.ParseErrors = append(train.ParseErrors, &ParseError{
+			Field: "LatLng", Value: data.Latitude + "," + data.Longitude, Err: err,
+		})
+	}
 
 	for _, s := range data.Stops {
 		stop := StationStop{
@@ -139,8 +160,18 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 			Departed: (s.Departed == "YES"),
 			Status:   s.Status,
 		}
-		stop.Time, _ = parseTime(s.Time)
-		stop.DepartureTime, _ = parseTime(s.DepartureTime)
+		stop.Time, err = parseTime(s.Time)
+		if err != nil {
+			stop.ParseErrors = append(stop.ParseErrors, &ParseError{
+				Field: "Time", Value: s.Time, Err: err,
+			})
+		}
+		stop.DepartureTime, err = parseTime(s.DepartureTime)
+		if err != nil {
+			stop.ParseErrors = append(stop.ParseErrors, &ParseError{
+				Field: "DEP_TIME", Value: s.DepartureTime, Err: err,
+			})
+		}
 
 		if len(s.Lines) > 0 {
 			stop.Lines = make([]Line, len(s.Lines))
@@ -200,7 +231,7 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			return nil, err
 		}
 
-		latlng, _ := parseLatLng(d.Latitude, d.Longitude)
+		latlng, err := parseLatLng(d.Latitude, d.Longitude)
 
 		t := Train{
 			ID:           id,
@@ -211,8 +242,23 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			LatLng:       latlng,
 			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
-		t.LastModified, _ = parseTime(d.LastModified)
-		t.ScheduledDepartureTime, _ = parseTime(d.ScheduledDepartureTime)
+		if err != nil {
+			t.ParseErrors = append(t.ParseErrors, &ParseError{
+				Field: "LatLng", Value: d.Latitude + "," + d.Longitude, Err: err,
+			})
+		}
+		t.LastModified, err = parseTime(d.LastModified)
+		if err != nil {
+			t.ParseErrors = append(t.ParseErrors, &ParseError{
+				Field: "LAST_MODIFIED", Value: d.LastModified, Err: err,
+			})
+		}
+		t.ScheduledDepartureTime, err = parseTime(d.ScheduledDepartureTime)
+		if err != nil {
+			t.ParseErrors = append(t.ParseErrors, &ParseError{
+				Field: "SCHED_DEP_TIME", Value: d.ScheduledDepartureTime, Err: err,
+			})
+		}
 		trains = append(trains, t)
 	}
 	return removeDupTrains(trains), nil

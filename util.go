@@ -1,6 +1,7 @@
 package njtapi
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -11,6 +12,21 @@ import (
 type LatLng struct {
 	Lat float64 // Latitude
 	Lng float64 // Longitude
+}
+
+// ParseError is returned when a field value cannot be parsed.
+type ParseError struct {
+	Field string
+	Value string
+	Err   error
+}
+
+func (e *ParseError) Error() string {
+	return fmt.Sprintf("parsing field %q value %q: %v", e.Field, e.Value, e.Err)
+}
+
+func (e *ParseError) Unwrap() error {
+	return e.Err
 }
 
 var tz *time.Location

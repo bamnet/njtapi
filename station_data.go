@@ -36,6 +36,7 @@ type StationTrain struct {
 	LatLngTimestamp        time.Time     // Time the train location was measured
 	InlineMsg              string        // In-line message for the train at this station
 	Stops                  []StationStop // List of all stops for this train.
+	ParseErrors            []error       // Errors encountered while parsing this train
 }
 
 // A StationStop is a stop this train will make, or has made, on it's route.
@@ -46,6 +47,7 @@ type StationStop struct {
 	DepartureTime time.Time // Time the train was intially scheduled to depart this station
 	Lines         []Line    // Connecting lines available at this station
 	Status        string    // Current status of the train at this stop
+	ParseErrors   []error   // Errors encountered while parsing this stop
 }
 
 // A Line is train line, like the North Jersey Coast Line.
@@ -115,14 +117,34 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 			LineAbbrv:   r.LineAbbreviation,
 			InlineMsg:   strings.TrimSpace(r.InlineMsg),
 		}
-		train.ScheduledDepartureDate, _ = parseTime(r.ScheduledDepartureDate)
-		train.LatLngTimestamp, _ = parseTime(r.GPSTime)
-		train.LatLng, _ = parseLatLng(r.Latitude, r.Longitude)
+		train.ScheduledDepartureDate, err = parseTime(r.ScheduledDepartureDate)
+		if err != nil {
+			train.ParseErrors = append(train.ParseErrors, &ParseError{
+				Field: "SCHED_DEP_DATE", Value: r.ScheduledDepartureDate, Err: err,
+			})
+		}
+		train.LatLngTimestamp, err = parseTime(r.GPSTime)
+		if err != nil {
+			train.ParseErrors = append(train.ParseErrors, &ParseError{
+				Field: "GPSTime", Value: r.GPSTime, Err: err,
+			})
+		}
+		train.LatLng, err = parseLatLng(r.Latitude, r.Longitude)
+		if err != nil {
+			train.ParseErrors = append(train.ParseErrors, &ParseError{
+				Field: "LatLng", Value: r.Latitude + "," + r.Longitude, Err: err,
+			})
+		}
 
 		stops := make([]StationStop, len(r.Stops))
 		for j, s := range r.Stops {
 			stops[j] = StationStop{Name: strings.TrimSpace(s.Name)}
-			stops[j].Time, _ = parseTime(s.Time)
+			stops[j].Time, err = parseTime(s.Time)
+			if err != nil {
+				stops[j].ParseErrors = append(stops[j].ParseErrors, &ParseError{
+					Field: "Time", Value: s.Time, Err: err,
+				})
+			}
 			stops[j].Departed = (s.Departed == "YES")
 		}
 		train.Stops = stops

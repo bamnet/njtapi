@@ -1,11 +1,24 @@
 package njtapi
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestParseError(t *testing.T) {
+	inner := errors.New("bad value")
+	e := &ParseError{Field: "TIME", Value: "garbage", Err: inner}
+	want := "parsing field \"TIME\" value \"garbage\": bad value"
+	if got := e.Error(); got != want {
+		t.Errorf("Error() = %q, want %q", got, want)
+	}
+	if !errors.Is(e, inner) {
+		t.Errorf("expected errors.Is(e, inner) to be true")
+	}
+}
 
 func TestParseTime(t *testing.T) {
 	for _, r := range []struct {

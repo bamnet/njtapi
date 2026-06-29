@@ -2,6 +2,7 @@ package njtapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -186,5 +187,78 @@ func TestStationData(t *testing.T) {
 		if diff := cmp.Diff(r.want, got); diff != "" {
 			t.Errorf("StationData(%s) mismatch (-want +got):\n%s", r.station, diff)
 		}
+	}
+}
+
+func TestStationDataParseErrors(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+<STATION>
+<STATION_2CHAR>SE</STATION_2CHAR>
+<STATIONNAME>Secaucus</STATIONNAME>
+<ITEMS>
+<ITEM>
+<ITEM_INDEX>0</ITEM_INDEX>
+<SCHED_DEP_DATE>bad-date</SCHED_DEP_DATE>
+<DESTINATION>New York</DESTINATION>
+<TRACK>A</TRACK>
+<LINE>Northeast Corridor</LINE>
+<TRAIN_ID>1234</TRAIN_ID>
+<STATUS>On Time</STATUS>
+<SEC_LATE>0</SEC_LATE>
+<LAST_MODIFIED>18-Nov-2019 08:00:00 PM</LAST_MODIFIED>
+<BACKCOLOR></BACKCOLOR>
+<FORECOLOR></FORECOLOR>
+<SHADOWCOLOR></SHADOWCOLOR>
+<GPSTIME>bad-gpstime</GPSTIME>
+<LINEABBREVIATION>NEC</LINEABBREVIATION>
+<INLINEMSG></INLINEMSG>
+<GPSLONGITUDE>abc</GPSLONGITUDE>
+<GPSLATITUDE>-74.0403</GPSLATITUDE>
+<STOPS>
+<STOP>
+<NAME>Secaucus</NAME>
+<TIME>bad-time</TIME>
+<DEPARTED>NO</DEPARTED>
+</STOP>
+</STOPS>
+</ITEM>
+</ITEMS>
+</STATION>`))
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+	station, err := c.StationData(context.Background(), "SE")
+	if err != nil {
+		t.Fatalf("StationData() error: %v", err)
+	}
+
+	if len(station.Departures) != 1 {
+		t.Fatalf("expected 1 departure, got %d", len(station.Departures))
+	}
+	train := station.Departures[0]
+
+	if len(train.ParseErrors) != 3 {
+		t.Errorf("expected 3 train parse errors, got %d: %v", len(train.ParseErrors), train.ParseErrors)
+	}
+
+	if len(train.Stops) != 1 {
+		t.Fatalf("expected 1 stop, got %d", len(train.Stops))
+	}
+
+	if len(train.Stops[0].ParseErrors) != 1 {
+		t.Errorf("expected 1 stop parse error, got %d: %v", len(train.Stops[0].ParseErrors), train.Stops[0].ParseErrors)
+	}
+
+	for _, e := range train.ParseErrors {
+		var pe *ParseError
+		if !errors.As(e, &pe) {
+			t.Errorf("expected *ParseError, got %T", e)
+		}
+	}
+	var pe *ParseError
+	if !errors.As(train.Stops[0].ParseErrors[0], &pe) {
+		t.Errorf("expected *ParseError for stop, got %T", train.Stops[0].ParseErrors[0])
 	}
 }
