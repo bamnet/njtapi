@@ -2,6 +2,7 @@ package njtapi
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -268,5 +269,114 @@ func TestGetTrainStops(t *testing.T) {
 		if diff := cmp.Diff(r.want, got); diff != "" {
 			t.Errorf("GetTrain(%d) mismatch (-want +got):\n%s", r.trainID, diff)
 		}
+	}
+}
+
+func TestVehicleDataParseErrors(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+<TRAINS>
+<TRAIN>
+<ID>1234</ID>
+<TRAIN_LINE>Northeast Corridor</TRAIN_LINE>
+<DIRECTION>Eastbound</DIRECTION>
+<LAST_MODIFIED>bad-lastmodified</LAST_MODIFIED>
+<SCHED_DEP_TIME>bad-scheddep</SCHED_DEP_TIME>
+<SEC_LATE>0</SEC_LATE>
+<NEXT_STOP>New York</NEXT_STOP>
+<LONGITUDE>abc</LONGITUDE>
+<LATITUDE>-74.0403</LATITUDE>
+</TRAIN>
+</TRAINS>`))
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+	trains, err := c.VehicleData(context.Background())
+	if err != nil {
+		t.Fatalf("VehicleData() error: %v", err)
+	}
+
+	if len(trains) != 1 {
+		t.Fatalf("expected 1 train, got %d", len(trains))
+	}
+
+	if len(trains[0].ParseErrors) != 3 {
+		t.Errorf("expected 3 parse errors, got %d: %v", len(trains[0].ParseErrors), trains[0].ParseErrors)
+	}
+
+	for _, e := range trains[0].ParseErrors {
+		var pe *ParseError
+		if !errors.As(e, &pe) {
+			t.Errorf("expected *ParseError, got %T", e)
+		}
+	}
+}
+
+func TestGetTrainMapParseErrors(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Trains>
+<Train>
+<Train_ID>1234</Train_ID>
+<TrainLine>Northeast Corridor</TrainLine>
+<DIRECTION>Eastbound</DIRECTION>
+<LAST_MODIFIED>bad-date</LAST_MODIFIED>
+<longitude>abc</longitude>
+<latitude>def</latitude>
+<TrackCKT>AA-141UN</TrackCKT>
+</Train>
+</Trains>`))
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+	train, err := c.GetTrainMap(context.Background(), 1234)
+	if err != nil {
+		t.Fatalf("GetTrainMap() error: %v", err)
+	}
+
+	if len(train.ParseErrors) != 2 {
+		t.Errorf("expected 2 parse errors, got %d: %v", len(train.ParseErrors), train.ParseErrors)
+	}
+}
+
+func TestGetTrainStopsParseErrors(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Train>
+<Train_ID>1085</Train_ID>
+<GPSTIME>bad-gpstime</GPSTIME>
+<GPSLATITUDE>abc</GPSLATITUDE>
+<GPSLONGITUDE>def</GPSLONGITUDE>
+<STOPS>
+<STOP>
+<NAME>Hoboken</NAME>
+<TIME>bad-time</TIME>
+<DEPARTED>YES</DEPARTED>
+<STOP_STATUS>OnTime</STOP_STATUS>
+<DEP_TIME>bad-deptime</DEP_TIME>
+</STOP>
+</STOPS>
+</Train>`))
+	}))
+	defer ts.Close()
+
+	c := NewClient(ts.URL, "username", "pa$$word")
+	train, err := c.GetTrainStops(context.Background(), 1085)
+	if err != nil {
+		t.Fatalf("GetTrainStops() error: %v", err)
+	}
+
+	if len(train.ParseErrors) != 2 {
+		t.Errorf("expected 2 train parse errors, got %d: %v", len(train.ParseErrors), train.ParseErrors)
+	}
+
+	if len(train.Stops) != 1 {
+		t.Fatalf("expected 1 stop, got %d", len(train.Stops))
+	}
+
+	if len(train.Stops[0].ParseErrors) != 2 {
+		t.Errorf("expected 2 stop parse errors, got %d: %v", len(train.Stops[0].ParseErrors), train.Stops[0].ParseErrors)
 	}
 }
