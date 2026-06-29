@@ -15,6 +15,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 // Client stores connection info needed talking to the NJTransit API.
@@ -50,7 +51,12 @@ func (e *APIError) Unwrap() error {
 // baseURL: The root URL that the API is exposed on.
 // username / password: Authentication credentials for calling the API.
 func NewClient(baseURL, username, password string) *Client {
-	return &Client{&http.Client{}, baseURL, username, password}
+	return &Client{
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+		baseURL:    baseURL,
+		username:   username,
+		password:   password,
+	}
 }
 
 // NewCustomClient uses the supplied `http.Client` when talking to the API.
