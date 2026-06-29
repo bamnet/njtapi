@@ -39,7 +39,7 @@ func TestFetch(t *testing.T) {
 		if r.URL.Query().Get("password") != "pass" {
 			t.Error("missing password")
 		}
-		w.Write([]byte("<response>ok</response>"))
+		_, _ = w.Write([]byte("<response>ok</response>"))
 	}))
 	defer srv.Close()
 
