@@ -35,6 +35,9 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string {
+	if e.Body == "" {
+		return fmt.Sprintf("HTTP %d: %s", e.StatusCode, http.StatusText(e.StatusCode))
+	}
 	return fmt.Sprintf("HTTP %d: %s", e.StatusCode, e.Body)
 }
 
@@ -89,9 +92,14 @@ func (c *Client) fetch(ctx context.Context, endpoint string, params map[string]s
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		const maxBodyLen = 1024
+		errBody := string(body)
+		if len(errBody) > maxBodyLen {
+			errBody = errBody[:maxBodyLen] + "..."
+		}
 		return nil, &APIError{
 			StatusCode: resp.StatusCode,
-			Body:       string(body),
+			Body:       errBody,
 		}
 	}
 
