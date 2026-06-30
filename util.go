@@ -30,7 +30,11 @@ func (e *ParseError) Unwrap() error {
 
 // parseTime converts a timestamp returned from the API to a time.Time.
 func (c *Client) parseTime(ts string) (time.Time, error) {
-	return time.ParseInLocation("02-Jan-2006 03:04:05 PM", ts, c.location)
+	loc := time.UTC
+	if c != nil && c.location != nil {
+		loc = c.location
+	}
+	return time.ParseInLocation("02-Jan-2006 03:04:05 PM", ts, loc)
 }
 
 // Convert a lat or long string to an actual number.

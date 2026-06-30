@@ -52,15 +52,13 @@ func (e *APIError) Unwrap() error {
 // baseURL: The root URL that the API is exposed on.
 // username / password: Authentication credentials for calling the API.
 func NewClient(baseURL, username, password string) *Client {
-	return NewClientWithLocation(baseURL, username, password, "America/New_York")
+	return NewClientWithLocation(baseURL, username, password, defaultLocation())
 }
 
 // NewClientWithLocation constructs a new client with a custom timezone location.
-// The location string must be a valid IANA Time Zone name (e.g. "America/New_York").
-// If the location fails to load, it falls back to UTC.
-func NewClientWithLocation(baseURL, username, password, location string) *Client {
-	loc, err := time.LoadLocation(location)
-	if err != nil {
+// If the provided location is nil, it falls back to UTC.
+func NewClientWithLocation(baseURL, username, password string, loc *time.Location) *Client {
+	if loc == nil {
 		loc = time.UTC
 	}
 	return &Client{

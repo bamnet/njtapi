@@ -207,16 +207,16 @@ func TestNewClientDefaultLocation(t *testing.T) {
 }
 
 func TestNewClientWithLocation(t *testing.T) {
-	c := NewClientWithLocation("http://example.com", "user", "pass", "UTC")
+	c := NewClientWithLocation("http://example.com", "user", "pass", time.UTC)
 	if c.location != time.UTC {
 		t.Errorf("expected UTC location, got %v", c.location)
 	}
 }
 
-func TestNewClientWithLocationFallback(t *testing.T) {
-	c := NewClientWithLocation("http://example.com", "user", "pass", "bogus/timezone")
+func TestNewClientWithLocationNilFallback(t *testing.T) {
+	c := NewClientWithLocation("http://example.com", "user", "pass", nil)
 	if c.location != time.UTC {
-		t.Errorf("expected UTC fallback for invalid location, got %v", c.location)
+		t.Errorf("expected UTC fallback for nil location, got %v", c.location)
 	}
 }
 
