@@ -21,14 +21,20 @@ func TestParseError(t *testing.T) {
 }
 
 func TestParseTime(t *testing.T) {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatalf("unable to load timezone: %v", err)
+	}
+	c := &Client{location: loc}
+
 	for _, r := range []struct {
 		timestamp string
 		time      time.Time
 	}{
-		{"28-Jul-2018 12:01:07 AM", time.Date(2018, 7, 28, 0, 1, 7, 0, tz)},
-		{"28-Jul-2018 01:05:30 PM", time.Date(2018, 7, 28, 13, 5, 30, 0, tz)},
+		{"28-Jul-2018 12:01:07 AM", time.Date(2018, 7, 28, 0, 1, 7, 0, loc)},
+		{"28-Jul-2018 01:05:30 PM", time.Date(2018, 7, 28, 13, 5, 30, 0, loc)},
 	} {
-		if got, _ := parseTime(r.timestamp); got != r.time {
+		if got, _ := c.parseTime(r.timestamp); got != r.time {
 			t.Errorf("parseTime(%s) got %v want %v", r.timestamp, got, r.time)
 		}
 	}

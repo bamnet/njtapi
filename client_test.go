@@ -195,3 +195,47 @@ func TestFetchTruncatedErrorBody(t *testing.T) {
 		t.Errorf("expected body to end with '...', got suffix %q", apiErr.Body[1020:])
 	}
 }
+
+func TestNewClientDefaultLocation(t *testing.T) {
+	c := NewClient("http://example.com", "user", "pass")
+	if c.location == nil {
+		t.Fatal("NewClient() location is nil")
+	}
+	if _, err := c.parseTime("28-Jul-2018 12:01:07 AM"); err != nil {
+		t.Errorf("parseTime failed with default location: %v", err)
+	}
+}
+
+func TestNewClientWithLocation(t *testing.T) {
+	c := NewClientWithLocation("http://example.com", "user", "pass", time.UTC)
+	if c.location != time.UTC {
+		t.Errorf("expected UTC location, got %v", c.location)
+	}
+}
+
+func TestNewClientWithLocationNilFallback(t *testing.T) {
+	c := NewClientWithLocation("http://example.com", "user", "pass", nil)
+	if c.location != time.UTC {
+		t.Errorf("expected UTC fallback for nil location, got %v", c.location)
+	}
+}
+
+func TestNewCustomClientDefaultLocation(t *testing.T) {
+	c := NewCustomClient(&http.Client{}, "http://example.com", "user", "pass")
+	if c.location == nil {
+		t.Fatal("NewCustomClient() location is nil")
+	}
+	if _, err := c.parseTime("28-Jul-2018 12:01:07 AM"); err != nil {
+		t.Errorf("parseTime failed with default location: %v", err)
+	}
+}
+
+func TestDefaultLocation(t *testing.T) {
+	loc := defaultLocation()
+	if loc == nil {
+		t.Fatal("defaultLocation() returned nil")
+	}
+	if name, _ := time.Now().In(loc).Zone(); name == "" {
+		t.Errorf("expected a valid timezone, got zone name %q", name)
+	}
+}

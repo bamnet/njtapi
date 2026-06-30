@@ -24,6 +24,7 @@ type Client struct {
 	baseURL    string
 	username   string
 	password   string
+	location   *time.Location
 }
 
 // ErrUnexpectedStatus is returned when the API returns a non-2xx HTTP status code.
@@ -51,11 +52,21 @@ func (e *APIError) Unwrap() error {
 // baseURL: The root URL that the API is exposed on.
 // username / password: Authentication credentials for calling the API.
 func NewClient(baseURL, username, password string) *Client {
+	return NewClientWithLocation(baseURL, username, password, defaultLocation())
+}
+
+// NewClientWithLocation constructs a new client with a custom timezone location.
+// If the provided location is nil, it falls back to UTC.
+func NewClientWithLocation(baseURL, username, password string, loc *time.Location) *Client {
+	if loc == nil {
+		loc = time.UTC
+	}
 	return &Client{
 		httpClient: &http.Client{Timeout: 30 * time.Second},
 		baseURL:    baseURL,
 		username:   username,
 		password:   password,
+		location:   loc,
 	}
 }
 
@@ -64,7 +75,21 @@ func NewClient(baseURL, username, password string) *Client {
 //
 // See `NewClient` for a description of the rest of the parameters.
 func NewCustomClient(c *http.Client, baseURL, username, password string) *Client {
-	return &Client{c, baseURL, username, password}
+	return &Client{
+		httpClient: c,
+		baseURL:    baseURL,
+		username:   username,
+		password:   password,
+		location:   defaultLocation(),
+	}
+}
+
+func defaultLocation() *time.Location {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return time.UTC
+	}
+	return loc
 }
 
 // fetch retrieves data from an API endpoint.

@@ -2,7 +2,6 @@ package njtapi
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -29,23 +28,13 @@ func (e *ParseError) Unwrap() error {
 	return e.Err
 }
 
-var tz *time.Location
-
-func init() {
-	var err error
-	// Hardcode the timezone to New York.
-	// While New Jersey and New York are separate states,
-	// New Jersey would never dream of using a different timezone
-	// than New York without triggering some sort of proxy-war.
-	tz, err = time.LoadLocation("America/New_York")
-	if err != nil {
-		log.Fatalf("unable to load timezone: %v", err)
+// parseTime converts a timestamp returned from the API to a time.Time.
+func (c *Client) parseTime(ts string) (time.Time, error) {
+	loc := time.UTC
+	if c != nil && c.location != nil {
+		loc = c.location
 	}
-}
-
-// Convert a timestamp returned from the API to a time.Time.
-func parseTime(ts string) (time.Time, error) {
-	return time.ParseInLocation("02-Jan-2006 03:04:05 PM", ts, tz)
+	return time.ParseInLocation("02-Jan-2006 03:04:05 PM", ts, loc)
 }
 
 // Convert a lat or long string to an actual number.

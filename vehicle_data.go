@@ -79,7 +79,7 @@ func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 		Direction:    t.Direction,
 		TrackCircuit: t.TrackCircuit,
 	}
-	train.LastModified, err = parseTime(t.LastModified)
+	train.LastModified, err = c.parseTime(t.LastModified)
 	if err != nil {
 		train.ParseErrors = append(train.ParseErrors, &ParseError{
 			Field: "LAST_MODIFIED", Value: t.LastModified, Err: err,
@@ -140,7 +140,7 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 		ID:    trainID,
 		Stops: []StationStop{},
 	}
-	train.LastModified, err = parseTime(data.GPSTime)
+	train.LastModified, err = c.parseTime(data.GPSTime)
 	if err != nil {
 		train.ParseErrors = append(train.ParseErrors, &ParseError{
 			Field: "GPSTIME", Value: data.GPSTime, Err: err,
@@ -160,13 +160,13 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 			Departed: (s.Departed == "YES"),
 			Status:   s.Status,
 		}
-		stop.Time, err = parseTime(s.Time)
+		stop.Time, err = c.parseTime(s.Time)
 		if err != nil {
 			stop.ParseErrors = append(stop.ParseErrors, &ParseError{
 				Field: "Time", Value: s.Time, Err: err,
 			})
 		}
-		stop.DepartureTime, err = parseTime(s.DepartureTime)
+		stop.DepartureTime, err = c.parseTime(s.DepartureTime)
 		if err != nil {
 			stop.ParseErrors = append(stop.ParseErrors, &ParseError{
 				Field: "DEP_TIME", Value: s.DepartureTime, Err: err,
@@ -249,13 +249,13 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 			LatLng:       latlng,
 			TrackCircuit: strings.TrimSpace(d.TrackCircuit),
 		}
-		t.LastModified, err = parseTime(d.LastModified)
+		t.LastModified, err = c.parseTime(d.LastModified)
 		if err != nil {
 			parseErrs = append(parseErrs, &ParseError{
 				Field: "LAST_MODIFIED", Value: d.LastModified, Err: err,
 			})
 		}
-		t.ScheduledDepartureTime, err = parseTime(d.ScheduledDepartureTime)
+		t.ScheduledDepartureTime, err = c.parseTime(d.ScheduledDepartureTime)
 		if err != nil {
 			parseErrs = append(parseErrs, &ParseError{
 				Field: "SCHED_DEP_TIME", Value: d.ScheduledDepartureTime, Err: err,
