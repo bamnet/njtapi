@@ -117,13 +117,13 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 			LineAbbrv:   r.LineAbbreviation,
 			InlineMsg:   strings.TrimSpace(r.InlineMsg),
 		}
-		train.ScheduledDepartureDate, err = parseTime(r.ScheduledDepartureDate)
+		train.ScheduledDepartureDate, err = c.parseTime(r.ScheduledDepartureDate)
 		if err != nil {
 			train.ParseErrors = append(train.ParseErrors, &ParseError{
 				Field: "SCHED_DEP_DATE", Value: r.ScheduledDepartureDate, Err: err,
 			})
 		}
-		train.LatLngTimestamp, err = parseTime(r.GPSTime)
+		train.LatLngTimestamp, err = c.parseTime(r.GPSTime)
 		if err != nil {
 			train.ParseErrors = append(train.ParseErrors, &ParseError{
 				Field: "GPSTime", Value: r.GPSTime, Err: err,
@@ -139,7 +139,7 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 		stops := make([]StationStop, len(r.Stops))
 		for j, s := range r.Stops {
 			stops[j] = StationStop{Name: strings.TrimSpace(s.Name)}
-			stops[j].Time, err = parseTime(s.Time)
+			stops[j].Time, err = c.parseTime(s.Time)
 			if err != nil {
 				stops[j].ParseErrors = append(stops[j].ParseErrors, &ParseError{
 					Field: "Time", Value: s.Time, Err: err,
