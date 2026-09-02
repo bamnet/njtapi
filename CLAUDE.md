@@ -33,7 +33,7 @@ This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps the 
 | Method | Endpoint | Returns |
 |---|---|---|
 | `StationData(ctx, stationID)` | `getTrainScheduleXML` | Departures from a station with per-train stop lists |
-| `StationList(ctx)` | `getStationListXML` | All stations; enriched with aliases from `extra_stations.go` |
+| `StationList(ctx)` | `getStationListXML` | All stations; enriched with aliases from a local map in `StationList` |
 | `VehicleData(ctx)` | `getVehicleDataXML` | All active trains (location, delay, next stop) |
 | `GetTrainMap(ctx, trainID)` | `getTrainMapXML` | Single train: location + track circuit only |
 | `GetTrainStops(ctx, trainID)` | `getTrainStopListXML` | Single train: full stop list with connecting lines |
@@ -42,4 +42,4 @@ This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps the 
 
 **Tests use local XML fixtures** in `testdata/` rather than hitting the live API. Each `*_test.go` file reads the corresponding fixture file to drive tests.
 
-**Station aliases** (`extra_stations.go`) exist because the NJTransit API returns inconsistent station names across endpoints. The `StationList` method merges these aliases into the `Station.Aliases` field.
+**Station aliases** (a local map declared inside `StationList` in `station_data.go`) exist because the NJTransit API returns inconsistent station names across endpoints. The `StationList` method merges these aliases into the `Station.Aliases` field.
