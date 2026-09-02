@@ -9,12 +9,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
-
-func trainLess(t1 Train, t2 Train) bool {
-	return t1.ID < t2.ID
-}
 
 func TestRemoveDupTrains(t *testing.T) {
 	t1 := time.Date(2018, 1, 2, 3, 4, 0, 0, time.UTC)
@@ -44,7 +39,7 @@ func TestRemoveDupTrains(t *testing.T) {
 			},
 		},
 	} {
-		if got := removeDupTrains(r.input); !cmp.Equal(got, r.want, cmpopts.SortSlices(trainLess)) {
+		if got := removeDupTrains(r.input); !cmp.Equal(got, r.want) {
 			t.Errorf("removeDupTrains(%v) got %v want %v", r.input, got, r.want)
 		}
 	}

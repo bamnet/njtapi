@@ -290,22 +290,20 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 
 // removeDupTrains ensures there is only 1 train per ID in the array.
 // If duplicates are found, the train with the most recent LastModified time is kept.
+// The order of the returned trains matches the order in which each train ID
+// first appears in the input.
 func removeDupTrains(trains []Train) []Train {
-	ts := map[int]Train{}
-
+	seen := make(map[int]int) // trainID -> index in result
+	result := make([]Train, 0, len(trains))
 	for _, t := range trains {
-		if val, ok := ts[t.ID]; !ok || val.LastModified.Before(t.LastModified) {
-			ts[t.ID] = t
+		if idx, ok := seen[t.ID]; ok {
+			if result[idx].LastModified.Before(t.LastModified) {
+				result[idx] = t
+			}
+		} else {
+			seen[t.ID] = len(result)
+			result = append(result, t)
 		}
 	}
-
-	if len(ts) == len(trains) {
-		return trains
-	}
-
-	unique := []Train{}
-	for _, t := range ts {
-		unique = append(unique, t)
-	}
-	return unique
+	return result
 }
