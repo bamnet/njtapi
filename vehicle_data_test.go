@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func TrainLess(t1 Train, t2 Train) bool {
+func trainLess(t1 Train, t2 Train) bool {
 	return t1.ID < t2.ID
 }
 
@@ -44,7 +44,7 @@ func TestRemoveDupTrains(t *testing.T) {
 			},
 		},
 	} {
-		if got := removeDupTrains(r.input); !cmp.Equal(got, r.want, cmpopts.SortSlices(TrainLess)) {
+		if got := removeDupTrains(r.input); !cmp.Equal(got, r.want, cmpopts.SortSlices(trainLess)) {
 			t.Errorf("removeDupTrains(%v) got %v want %v", r.input, got, r.want)
 		}
 	}
