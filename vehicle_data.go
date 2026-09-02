@@ -37,6 +37,23 @@ type Train struct {
 	ParseErrors            []error       // Errors encountered while parsing this train
 }
 
+// trainMapResponse mirrors the XML shape returned by the getTrainMapXML endpoint.
+type trainMapResponse struct {
+	XMLName xml.Name        `xml:"Trains"`
+	Trains  []trainMapEntry `xml:"Train"`
+}
+
+// trainMapEntry is a single train entry within a trainMapResponse.
+type trainMapEntry struct {
+	ID           string `xml:"Train_ID"`
+	Line         string `xml:"TrainLine"`
+	Direction    string `xml:"DIRECTION"`
+	LastModified string `xml:"LAST_MODIFIED"`
+	Longitude    string `xml:"longitude"`
+	Latitude     string `xml:"latitude"`
+	TrackCircuit string `xml:"TrackCKT"`
+}
+
 // Get information about a specific train from the "Map" API endpoint.
 //
 // The `Train` object returned will not have all the fields set. It will
@@ -48,18 +65,7 @@ func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 		return nil, err
 	}
 
-	data := struct {
-		XMLName xml.Name `xml:"Trains"`
-		Trains  []struct {
-			ID           string `xml:"Train_ID"`
-			Line         string `xml:"TrainLine"`
-			Direction    string `xml:"DIRECTION"`
-			LastModified string `xml:"LAST_MODIFIED"`
-			Longitude    string `xml:"longitude"`
-			Latitude     string `xml:"latitude"`
-			TrackCircuit string `xml:"TrackCKT"`
-		} `xml:"Train"`
-	}{}
+	data := trainMapResponse{}
 
 	err = xml.Unmarshal(resp, &data)
 	if err != nil {
@@ -96,6 +102,34 @@ func (c *Client) GetTrainMap(ctx context.Context, trainID int) (*Train, error) {
 	return &train, nil
 }
 
+// trainStopsResponse mirrors the XML shape returned by the getTrainStopListXML endpoint.
+type trainStopsResponse struct {
+	XMLName     xml.Name         `xml:"Train"`
+	ID          string           `xml:"Train_ID"`
+	Destination string           `xml:"DESTINATION"`
+	GPSTime     string           `xml:"GPSTIME"`
+	Longitude   string           `xml:"GPSLONGITUDE"`
+	Latitude    string           `xml:"GPSLATITUDE"`
+	Stops       []trainStopsStop `xml:"STOPS>STOP"`
+}
+
+// trainStopsStop is a single stop entry within a trainStopsResponse.
+type trainStopsStop struct {
+	Name          string           `xml:"NAME"`
+	Station2Char  string           `xml:"STATION_2CHAR"`
+	Time          string           `xml:"TIME"`
+	Departed      string           `xml:"DEPARTED"`
+	Status        string           `xml:"STOP_STATUS"`
+	DepartureTime string           `xml:"DEP_TIME"`
+	Lines         []trainStopsLine `xml:"STOP_LINES>STOP_LINE"`
+}
+
+// trainStopsLine is a single connecting line entry within a trainStopsStop.
+type trainStopsLine struct {
+	Code string `xml:"LINE_CODE"`
+	Name string `xml:"LINE_NAME"`
+}
+
 // Get information about a specific train from the "Stops" API endpoint.
 //
 // The `Train` object returned will not have all the fields set. It will
@@ -106,26 +140,7 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 		return nil, err
 	}
 
-	data := struct {
-		XMLName     xml.Name `xml:"Train"`
-		ID          string   `xml:"Train_ID"`
-		Destination string   `xml:"DESTINATION"`
-		GPSTime     string   `xml:"GPSTIME"`
-		Longitude   string   `xml:"GPSLONGITUDE"`
-		Latitude    string   `xml:"GPSLATITUDE"`
-		Stops       []struct {
-			Name          string `xml:"NAME"`
-			Station2Char  string `xml:"STATION_2CHAR"`
-			Time          string `xml:"TIME"`
-			Departed      string `xml:"DEPARTED"`
-			Status        string `xml:"STOP_STATUS"`
-			DepartureTime string `xml:"DEP_TIME"`
-			Lines         []struct {
-				Code string `xml:"LINE_CODE"`
-				Name string `xml:"LINE_NAME"`
-			} `xml:"STOP_LINES>STOP_LINE"`
-		} `xml:"STOPS>STOP"`
-	}{}
+	data := trainStopsResponse{}
 
 	err = xml.Unmarshal(resp, &data)
 	if err != nil {
@@ -185,6 +200,26 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 	return &train, nil
 }
 
+// vehicleDataResponse mirrors the XML shape returned by the getVehicleDataXML endpoint.
+type vehicleDataResponse struct {
+	XMLName xml.Name           `xml:"TRAINS"`
+	Trains  []vehicleDataEntry `xml:"TRAIN"`
+}
+
+// vehicleDataEntry is a single train entry within a vehicleDataResponse.
+type vehicleDataEntry struct {
+	ID                     string `xml:"ID"`
+	Line                   string `xml:"TRAIN_LINE"`
+	Direction              string `xml:"DIRECTION"`
+	LastModified           string `xml:"LAST_MODIFIED"`
+	ScheduledDepartureTime string `xml:"SCHED_DEP_TIME"`
+	SecondsLate            int    `xml:"SEC_LATE"`
+	NextStop               string `xml:"NEXT_STOP"`
+	Longitude              string `xml:"LONGITUDE"`
+	Latitude               string `xml:"LATITUDE"`
+	TrackCircuit           string `xml:"ICS_TRACK_CKT"`
+}
+
 // VehicleData returns up the most recent information about all "active" trains.
 func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 	resp, err := c.fetch(ctx, vehicleDataEndpoint, nil)
@@ -192,21 +227,7 @@ func (c *Client) VehicleData(ctx context.Context) ([]Train, error) {
 		return nil, err
 	}
 
-	data := struct {
-		XMLName xml.Name `xml:"TRAINS"`
-		Trains  []struct {
-			ID                     string `xml:"ID"`
-			Line                   string `xml:"TRAIN_LINE"`
-			Direction              string `xml:"DIRECTION"`
-			LastModified           string `xml:"LAST_MODIFIED"`
-			ScheduledDepartureTime string `xml:"SCHED_DEP_TIME"`
-			SecondsLate            int    `xml:"SEC_LATE"`
-			NextStop               string `xml:"NEXT_STOP"`
-			Longitude              string `xml:"LONGITUDE"`
-			Latitude               string `xml:"LATITUDE"`
-			TrackCircuit           string `xml:"ICS_TRACK_CKT"`
-		} `xml:"TRAIN"`
-	}{}
+	data := vehicleDataResponse{}
 
 	err = xml.Unmarshal(resp, &data)
 	if err != nil {

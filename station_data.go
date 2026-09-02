@@ -55,6 +55,44 @@ type Line struct {
 	Name string // Train line
 }
 
+// stationDataResponse mirrors the XML shape returned by the getTrainScheduleXML endpoint.
+type stationDataResponse struct {
+	XMLName      xml.Name          `xml:"STATION"`
+	Station2Char string            `xml:"STATION_2CHAR"`
+	StationName  string            `xml:"STATIONNAME"`
+	Items        []stationDataItem `xml:"ITEMS>ITEM"`
+}
+
+// stationDataItem is a single train entry within a stationDataResponse.
+type stationDataItem struct {
+	Index                  int               `xml:"ITEM_INDEX"`
+	ScheduledDepartureDate string            `xml:"SCHED_DEP_DATE"`
+	Destination            string            `xml:"DESTINATION"`
+	Track                  string            `xml:"TRACK"`
+	Line                   string            `xml:"LINE"`
+	TrainID                string            `xml:"TRAIN_ID"`
+	ConnectingTrainID      string            `xml:"CONNECTING_TRAIN_ID"`
+	Status                 string            `xml:"STATUS"`
+	SecondsLate            int               `xml:"SEC_LATE"`
+	LastModified           string            `xml:"LAST_MODIFIED"`
+	BackColor              string            `xml:"BACKCOLOR"`
+	ForeColor              string            `xml:"FORECOLOR"`
+	ShadowColor            string            `xml:"SHADOWCOLOR"`
+	GPSTime                string            `xml:"GPSTIME"`
+	LineAbbreviation       string            `xml:"LINEABBREVIATION"`
+	InlineMsg              string            `xml:"INLINEMSG"`
+	Longitude              string            `xml:"GPSLONGITUDE"`
+	Latitude               string            `xml:"GPSLATITUDE"`
+	Stops                  []stationDataStop `xml:"STOPS>STOP"`
+}
+
+// stationDataStop is a single stop entry within a stationDataItem.
+type stationDataStop struct {
+	Name     string `xml:"NAME"`
+	Time     string `xml:"TIME"`
+	Departed string `xml:"DEPARTED"`
+}
+
 // StationData returns details about upcoming trains stopping at a station.
 func (c *Client) StationData(ctx context.Context, station string) (*Station, error) {
 	resp, err := c.fetch(ctx, stationDataEndpoint, map[string]string{"station": station})
@@ -62,36 +100,7 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 		return nil, err
 	}
 
-	data := struct {
-		XMLName      xml.Name `xml:"STATION"`
-		Station2Char string   `xml:"STATION_2CHAR"`
-		StationName  string   `xml:"STATIONNAME"`
-		Items        []struct {
-			Index                  int    `xml:"ITEM_INDEX"`
-			ScheduledDepartureDate string `xml:"SCHED_DEP_DATE"`
-			Destination            string `xml:"DESTINATION"`
-			Track                  string `xml:"TRACK"`
-			Line                   string `xml:"LINE"`
-			TrainID                string `xml:"TRAIN_ID"`
-			ConnectingTrainID      string `xml:"CONNECTING_TRAIN_ID"`
-			Status                 string `xml:"STATUS"`
-			SecondsLate            int    `xml:"SEC_LATE"`
-			LastModified           string `xml:"LAST_MODIFIED"`
-			BackColor              string `xml:"BACKCOLOR"`
-			ForeColor              string `xml:"FORECOLOR"`
-			ShadowColor            string `xml:"SHADOWCOLOR"`
-			GPSTime                string `xml:"GPSTIME"`
-			LineAbbreviation       string `xml:"LINEABBREVIATION"`
-			InlineMsg              string `xml:"INLINEMSG"`
-			Longitude              string `xml:"GPSLONGITUDE"`
-			Latitude               string `xml:"GPSLATITUDE"`
-			Stops                  []struct {
-				Name     string `xml:"NAME"`
-				Time     string `xml:"TIME"`
-				Departed string `xml:"DEPARTED"`
-			} `xml:"STOPS>STOP"`
-		} `xml:"ITEMS>ITEM"`
-	}{}
+	data := stationDataResponse{}
 
 	err = xml.Unmarshal(resp, &data)
 	if err != nil {
@@ -155,6 +164,18 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 	return s, nil
 }
 
+// stationListResponse mirrors the XML shape returned by the getStationListXML endpoint.
+type stationListResponse struct {
+	XMLName xml.Name           `xml:"STATIONS"`
+	Station []stationListEntry `xml:"STATION"`
+}
+
+// stationListEntry is a single station entry within a stationListResponse.
+type stationListEntry struct {
+	Name         string `xml:"STATIONNAME"`
+	Station2Char string `xml:"STATION_2CHAR"`
+}
+
 // StationList returns a list of all the stations available.
 func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 	resp, err := c.fetch(ctx, stationListEndpoint, nil)
@@ -162,13 +183,7 @@ func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 		return nil, err
 	}
 
-	data := struct {
-		XMLName xml.Name `xml:"STATIONS"`
-		Station []struct {
-			Name         string `xml:"STATIONNAME"`
-			Station2Char string `xml:"STATION_2CHAR"`
-		} `xml:"STATION"`
-	}{}
+	data := stationListResponse{}
 
 	err = xml.Unmarshal(resp, &data)
 	if err != nil {
@@ -185,4 +200,3 @@ func (c *Client) StationList(ctx context.Context) ([]Station, error) {
 	}
 	return stations, nil
 }
-
