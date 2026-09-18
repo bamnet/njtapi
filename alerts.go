@@ -61,8 +61,14 @@ type AlertEntity struct {
 // non-ASCII characters with '?', most often an en dash
 // ("Concert ? Friday, September 25"); the text is not rewritten because a '?'
 // can't be reliably told apart from a real question mark.
-func (c *RailDataClient) Alerts(ctx context.Context) ([]Alert, error) {
-	body, err := c.fetch(ctx, "getAlerts")
+//
+// Alerts come from the RailData GTFS-realtime API and need the WithRailData
+// option; without it Alerts returns ErrRailDataNotConfigured.
+func (c *Client) Alerts(ctx context.Context) ([]Alert, error) {
+	if c.railData == nil {
+		return nil, ErrRailDataNotConfigured
+	}
+	body, err := c.railData.fetch(ctx, railDataGTFSRT, "getAlerts")
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +87,7 @@ func (c *RailDataClient) Alerts(ctx context.Context) ([]Alert, error) {
 	return alerts, nil
 }
 
-func (c *RailDataClient) convertAlert(id string, a *gtfs.Alert) Alert {
+func (c *Client) convertAlert(id string, a *gtfs.Alert) Alert {
 	out := Alert{
 		ID:          id,
 		Header:      translation(a.GetHeaderText()),
@@ -126,7 +132,7 @@ func (c *RailDataClient) convertAlert(id string, a *gtfs.Alert) Alert {
 }
 
 // unixTime converts a GTFS-realtime POSIX timestamp, where 0 means unset.
-func (c *RailDataClient) unixTime(ts uint64) time.Time {
+func (c *Client) unixTime(ts uint64) time.Time {
 	if ts == 0 {
 		return time.Time{}
 	}

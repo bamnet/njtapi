@@ -15,13 +15,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func ExampleRailDataClient_Alerts() {
-	// Update these values. RailData credentials are separate from the ones
-	// used by Client.
-	username := "your username"
-	password := "your password"
+func ExampleClient_Alerts() {
+	// Update these values. RailData credentials are separate from the legacy
+	// API's username and password.
+	username := "your RailData username"
+	password := "your RailData password"
 
-	client := NewRailDataClient(RailDataGTFSRTURL, username, password)
+	client := NewClient("", "", "", WithRailData(username, password))
 	alerts, err := client.Alerts(context.Background())
 	if err != nil {
 		log.Fatalf("Alerts() error: %v", err)
@@ -31,7 +31,8 @@ func ExampleRailDataClient_Alerts() {
 	}
 }
 
-// fakeRailData is a stand-in for the RailData GTFS-realtime API.
+// fakeRailData is a stand-in for the RailData APIs. Like the real service, it
+// issues tokens per API and rejects a token issued by a different API.
 type fakeRailData struct {
 	t *testing.T
 
@@ -39,6 +40,9 @@ type fakeRailData struct {
 	tokenCalls  int
 	alertsCalls int
 	issued      int
+	tokenAPI    map[string]string // token -> API that issued it
+	// perAPITokenCalls counts getToken calls by API.
+	perAPITokenCalls map[string]int
 
 	// authenticate controls whether getToken accepts the credentials.
 	authenticate bool
@@ -64,9 +68,24 @@ func (f *fakeRailData) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	switch r.URL.Path {
-	case "/getToken":
+	api, endpoint, _ := strings.Cut(strings.TrimPrefix(r.URL.Path, "/"), "/")
+	invalidToken := func() bool {
+		token := r.FormValue("token")
+		if token == "" || f.tokenAPI[token] != api || (f.rejectToken != nil && f.rejectToken(token)) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"errorMessage":"Invalid token."}`))
+			return true
+		}
+		return false
+	}
+	switch {
+	case (api == "GTFSRT" || api == "TrainData") && endpoint == "getToken":
 		f.tokenCalls++
+		if f.perAPITokenCalls == nil {
+			f.perAPITokenCalls = map[string]int{}
+		}
+		f.perAPITokenCalls[api]++
 		if u, p := r.FormValue("username"), r.FormValue("password"); u != "username" || p != "pa$$word" {
 			f.t.Errorf("Missing expected username & password: %v", r.Form)
 		}
@@ -76,14 +95,21 @@ func (f *fakeRailData) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		f.issued++
-		fmt.Fprintf(w, `{"Authenticated":"True","UserToken":"tok%d"}`, f.issued)
-	case "/getAlerts":
+		token := fmt.Sprintf("tok%d", f.issued)
+		if f.tokenAPI == nil {
+			f.tokenAPI = map[string]string{}
+		}
+		f.tokenAPI[token] = api
+		fmt.Fprintf(w, `{"Authenticated":"True","UserToken":%q}`, token)
+	case api == "TrainData" && endpoint == "getStationList":
+		if invalidToken() {
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`[]`))
+	case api == "GTFSRT" && endpoint == "getAlerts":
 		f.alertsCalls++
-		token := r.FormValue("token")
-		if token == "" || (f.rejectToken != nil && f.rejectToken(token)) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(`{"errorMessage":"Invalid token."}`))
+		if invalidToken() {
 			return
 		}
 		if f.alertsStatus != 0 {
@@ -164,7 +190,7 @@ func TestAlertsAuth(t *testing.T) {
 			ts := httptest.NewServer(f)
 			defer ts.Close()
 
-			c := NewRailDataClient(ts.URL, "username", "pa$$word")
+			c := NewClient("", "", "", WithRailData("username", "pa$$word"), WithRailDataURL(ts.URL))
 			for i := 0; i < tc.calls; i++ {
 				got, err := c.Alerts(context.Background())
 				switch {
@@ -204,7 +230,7 @@ func TestAlertsConcurrentTokenReuse(t *testing.T) {
 	ts := httptest.NewServer(f)
 	defer ts.Close()
 
-	c := NewRailDataClient(ts.URL, "username", "pa$$word")
+	c := NewClient("", "", "", WithRailData("username", "pa$$word"), WithRailDataURL(ts.URL))
 	var wg sync.WaitGroup
 	for i := 0; i < 8; i++ {
 		wg.Add(1)
@@ -232,7 +258,7 @@ func TestAlertsDecode(t *testing.T) {
 	ts := httptest.NewServer(&fakeRailData{t: t, authenticate: true})
 	defer ts.Close()
 
-	c := NewRailDataClient(ts.URL, "username", "pa$$word")
+	c := NewClient("", "", "", WithRailData("username", "pa$$word"), WithRailDataURL(ts.URL))
 	got, err := c.Alerts(context.Background())
 	if err != nil {
 		t.Fatalf("Alerts() error: %v", err)
@@ -302,7 +328,7 @@ func TestAlertsBadFeed(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == "/getToken" {
+				if r.URL.Path == "/GTFSRT/getToken" {
 					_, _ = w.Write([]byte(`{"Authenticated":"True","UserToken":"tok"}`))
 					return
 				}
@@ -310,10 +336,70 @@ func TestAlertsBadFeed(t *testing.T) {
 			}))
 			defer ts.Close()
 
-			c := NewRailDataClient(ts.URL, "username", "pa$$word")
+			c := NewClient("", "", "", WithRailData("username", "pa$$word"), WithRailDataURL(ts.URL))
 			if _, err := c.Alerts(context.Background()); err == nil {
 				t.Error("Alerts() expected error, got none")
 			}
 		})
+	}
+}
+
+func TestAlertsNotConfigured(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("Unexpected request to %q", r.URL.Path)
+	}))
+	defer ts.Close()
+
+	for name, c := range map[string]*Client{
+		"NewClient":                NewClient(ts.URL, "username", "password"),
+		"NewCustomClient":          NewCustomClient(ts.Client(), ts.URL, "username", "password"),
+		"URL without WithRailData": NewClient(ts.URL, "username", "password", WithRailDataURL(ts.URL)),
+	} {
+		if _, err := c.Alerts(context.Background()); !errors.Is(err, ErrRailDataNotConfigured) {
+			t.Errorf("%s: Alerts() error = %v, want %v", name, err, ErrRailDataNotConfigured)
+		}
+	}
+}
+
+func TestNewCustomClientRailData(t *testing.T) {
+	f := &fakeRailData{t: t, authenticate: true}
+	ts := httptest.NewServer(f)
+	defer ts.Close()
+
+	c := NewCustomClient(ts.Client(), "", "", "", WithRailDataURL(ts.URL), WithRailData("username", "pa$$word"))
+	got, err := c.Alerts(context.Background())
+	if err != nil {
+		t.Fatalf("Alerts() error: %v", err)
+	}
+	if len(got) != 10 {
+		t.Errorf("Alerts() returned %d alerts, want 10", len(got))
+	}
+}
+
+func TestRailDataTokensPerAPI(t *testing.T) {
+	f := &fakeRailData{t: t, authenticate: true}
+	ts := httptest.NewServer(f)
+	defer ts.Close()
+
+	c := NewClient("", "", "", WithRailData("username", "pa$$word"), WithRailDataURL(ts.URL))
+	ctx := context.Background()
+	// Alternate between two APIs. The fake rejects a token issued by the
+	// other API, so a shared token would fail or force a refresh each time.
+	for i := 0; i < 2; i++ {
+		if _, err := c.railData.fetch(ctx, railDataGTFSRT, "getAlerts"); err != nil {
+			t.Fatalf("GTFSRT fetch %d: unexpected error: %v", i, err)
+		}
+		if _, err := c.railData.fetch(ctx, "TrainData", "getStationList"); err != nil {
+			t.Fatalf("TrainData fetch %d: unexpected error: %v", i, err)
+		}
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if diff := cmp.Diff(map[string]int{"GTFSRT": 1, "TrainData": 1}, f.perAPITokenCalls); diff != "" {
+		t.Errorf("getToken calls by API mismatch (-want +got):\n%s", diff)
+	}
+	if f.alertsCalls != 2 {
+		t.Errorf("getAlerts called %d times, want 2", f.alertsCalls)
 	}
 }

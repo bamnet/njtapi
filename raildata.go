@@ -11,59 +11,49 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 )
 
-// RailDataGTFSRTURL is the base URL of NJTransit's RailData GTFS-realtime API.
-const RailDataGTFSRTURL = "https://raildata.njtransit.com/api/GTFSRT/"
+// railDataBaseURL is the root of NJTransit's RailData APIs. Each API lives
+// under its own path (railDataGTFSRT, ...).
+const railDataBaseURL = "https://raildata.njtransit.com/api/"
+
+// RailData API paths, relative to the RailData base URL. Each API issues and
+// accepts only its own tokens, so tokens are cached per API.
+const (
+	railDataGTFSRT = "GTFSRT"
+)
+
+// ErrRailDataNotConfigured is returned by methods that need the RailData API
+// when the Client was constructed without WithRailData.
+var ErrRailDataNotConfigured = errors.New("raildata: credentials not configured, see WithRailData")
 
 // ErrAuthenticationFailed is returned when the RailData API rejects the
-// username and password supplied to a RailDataClient.
+// username and password supplied with WithRailData.
 var ErrAuthenticationFailed = errors.New("raildata: authentication failed")
 
-// RailDataClient talks to NJTransit's RailData GTFS-realtime API.
+// railData talks to NJTransit's RailData APIs.
 //
-// RailData is a separate service from the one Client talks to: it has its own
-// base URL and its own credentials, and authenticates with a token obtained
-// from the username and password rather than sending them on every request.
-// The client fetches a token on first use, reuses it across calls, and fetches
-// a new one if the API reports that it is no longer valid.
+// RailData authenticates with a token obtained from a username and password
+// rather than sending them on every request. One login works on every RailData
+// API, but each API issues its own tokens and rejects the others', so a token
+// is fetched lazily and cached for each API separately. If an API reports that
+// a token is no longer valid, a new one is fetched and the call retried once.
 //
-// A RailDataClient is safe for concurrent use.
-type RailDataClient struct {
+// A railData is safe for concurrent use.
+type railData struct {
 	httpClient *http.Client
 	baseURL    string
 	username   string
 	password   string
-	location   *time.Location
 
-	mu    sync.Mutex // guards token and serializes token requests
+	mu     sync.Mutex // guards tokens
+	tokens map[string]*apiToken
+}
+
+// apiToken is the cached token for one RailData API.
+type apiToken struct {
+	mu    sync.Mutex // guards token and serializes token requests for the API
 	token string
-}
-
-// NewRailDataClient constructs a new client to talk to the RailData
-// GTFS-realtime API.
-//
-// baseURL: The root URL that the API is exposed on, usually RailDataGTFSRTURL.
-// username / password: RailData credentials, which are distinct from the
-// credentials used by Client.
-func NewRailDataClient(baseURL, username, password string) *RailDataClient {
-	return NewCustomRailDataClient(&http.Client{Timeout: 30 * time.Second}, baseURL, username, password)
-}
-
-// NewCustomRailDataClient uses the supplied `http.Client` when talking to the
-// API. This can be useful if you need to supply a custom timeout, proxy
-// server, etc.
-//
-// See `NewRailDataClient` for a description of the rest of the parameters.
-func NewCustomRailDataClient(c *http.Client, baseURL, username, password string) *RailDataClient {
-	return &RailDataClient{
-		httpClient: c,
-		baseURL:    baseURL,
-		username:   username,
-		password:   password,
-		location:   defaultLocation(),
-	}
 }
 
 // tokenResponse is the JSON body returned by getToken.
@@ -78,17 +68,34 @@ type errorResponse struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-// getToken returns the cached token, requesting a new one if none is cached.
-func (c *RailDataClient) getToken(ctx context.Context) (string, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.token != "" {
-		return c.token, nil
+// tokenFor returns the token cache for api, creating it if needed.
+func (r *railData) tokenFor(api string) *apiToken {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.tokens == nil {
+		r.tokens = map[string]*apiToken{}
+	}
+	t, ok := r.tokens[api]
+	if !ok {
+		t = &apiToken{}
+		r.tokens[api] = t
+	}
+	return t
+}
+
+// getToken returns the cached token for api, requesting a new one if none is
+// cached.
+func (r *railData) getToken(ctx context.Context, api string) (string, error) {
+	t := r.tokenFor(api)
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.token != "" {
+		return t.token, nil
 	}
 
-	body, err := c.post(ctx, "getToken", map[string]string{
-		"username": c.username,
-		"password": c.password,
+	body, err := r.post(ctx, api, "getToken", map[string]string{
+		"username": r.username,
+		"password": r.password,
 	})
 	if err != nil {
 		return "", err
@@ -101,53 +108,53 @@ func (c *RailDataClient) getToken(ctx context.Context) (string, error) {
 	if !strings.EqualFold(tr.Authenticated, "true") || tr.UserToken == "" {
 		return "", ErrAuthenticationFailed
 	}
-	c.token = tr.UserToken
-	return c.token, nil
+	t.token = tr.UserToken
+	return t.token, nil
 }
 
-// invalidateToken forgets token if it is still the cached one, so that the
-// next getToken call requests a fresh token.
-func (c *RailDataClient) invalidateToken(token string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.token == token {
-		c.token = ""
+// invalidateToken forgets token if it is still the one cached for api, so
+// that the next getToken call requests a fresh token.
+func (r *railData) invalidateToken(api, token string) {
+	t := r.tokenFor(api)
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.token == token {
+		t.token = ""
 	}
 }
 
-// fetch calls a token-authenticated endpoint. If the API rejects the token, a
-// new token is requested and the call is retried once.
-func (c *RailDataClient) fetch(ctx context.Context, endpoint string) ([]byte, error) {
+// fetch calls a token-authenticated endpoint of api. If the API rejects the
+// token, a new token is requested and the call is retried once.
+func (r *railData) fetch(ctx context.Context, api, endpoint string) ([]byte, error) {
 	for attempt := 0; ; attempt++ {
-		token, err := c.getToken(ctx)
+		token, err := r.getToken(ctx, api)
 		if err != nil {
 			return nil, err
 		}
-		body, err := c.post(ctx, endpoint, map[string]string{"token": token})
+		body, err := r.post(ctx, api, endpoint, map[string]string{"token": token})
 		if err == nil {
-			// Guard against an error reported with a 2xx status. Binary
-			// GTFS-realtime feeds never start with '{'.
-			if len(body) > 0 && body[0] == '{' {
-				err = errorFromBody(http.StatusOK, body)
-			} else {
+			// Guard against an error reported with a 2xx status.
+			var er errorResponse
+			if len(body) == 0 || body[0] != '{' || json.Unmarshal(body, &er) != nil || er.ErrorMessage == "" {
 				return body, nil
 			}
+			err = &APIError{StatusCode: http.StatusOK, Body: er.ErrorMessage}
 		}
 		if attempt > 0 || !isInvalidToken(err) {
 			return nil, err
 		}
-		c.invalidateToken(token)
+		r.invalidateToken(api, token)
 	}
 }
 
-// post sends fields as a multipart form to endpoint and returns the response
-// body. Non-2xx responses are returned as an *APIError.
-func (c *RailDataClient) post(ctx context.Context, endpoint string, fields map[string]string) ([]byte, error) {
-	u, err := url.Parse(c.baseURL)
+// post sends fields as a multipart form to endpoint of api and returns the
+// response body. Non-2xx responses are returned as an *APIError.
+func (r *railData) post(ctx context.Context, api, endpoint string, fields map[string]string) ([]byte, error) {
+	u, err := url.Parse(r.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	u = u.JoinPath(endpoint)
+	u = u.JoinPath(api, endpoint)
 
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)
@@ -166,7 +173,7 @@ func (c *RailDataClient) post(ctx context.Context, endpoint string, fields map[s
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
