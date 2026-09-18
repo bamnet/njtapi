@@ -20,7 +20,10 @@ go run demo/demo.go --base_url="http://njttraindata_tst.njtransit.com:8090/njttr
 
 ## Architecture
 
-This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps the NJTransit HTTP API. The API returns XML responses, authenticated via username/password query parameters.
+This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps two NJTransit HTTP APIs:
+
+- **`Client`** — the legacy ASMX train data API. It returns XML responses, authenticated via username/password query parameters.
+- **`RailDataClient`** — the RailData GTFS-realtime API (`RailDataGTFSRTURL`, `https://raildata.njtransit.com/api/GTFSRT/`). It uses **separate credentials** from `Client`. Every call is a multipart form POST: `getToken` takes `username`/`password` and returns JSON `{"Authenticated":"True","UserToken":"..."}` (`"False"` and an empty token on bad credentials); data calls take only `token` and return a binary GTFS-realtime `FeedMessage`. An invalid token gets HTTP 500 with `{"errorMessage":"Invalid token."}`. The client fetches a token lazily, caches it under a mutex (which also serializes token requests), and on an invalid-token response fetches a new one and retries once. Tokens are never included in errors. The API also lists `isValidToken`, `getGTFS`, `getTripUpdates` and `getVehiclePositions` (swagger: `https://raildata.njtransit.com/swagger/GTFS/swagger.json`), which aren't wrapped yet.
 
 **Key design decisions:**
 - The library makes opinionated decisions about data sanitization — it does not provide a 1:1 mapping of the API spec.
@@ -38,11 +41,14 @@ This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps the 
 | `VehicleData(ctx)` | `getVehicleDataXML` | All active trains (location, delay, next stop) |
 | `GetTrainMap(ctx, trainID)` | `getTrainMapXML` | Single train: location + track circuit only |
 | `GetTrainStops(ctx, trainID)` | `getTrainStopListXML` | Single train: full stop list with connecting lines |
+| `RailDataClient.Alerts(ctx)` | RailData `getAlerts` (GTFS-rt) | Service alerts with header/description, cause/effect, active periods and informed routes/stops/trips (GTFS IDs) |
+
+**Service alerts** are decoded with `gtfs-realtime-bindings` into the library-owned `Alert` type rather than exposing the protobuf types. NJTransit sends `cause`/`effect` as `UNKNOWN_*` only, informed entities carry GTFS `route_id`, `stop_id` or a `trip` (whose `route_id` fills `AlertEntity.RouteID`), and alert text has `?` where an en dash was; the text is left as sent.
 
 **Station messages** come from the `BANNERMSGS>MSG` element, which has the same shape in `getTrainScheduleXML` and `getStationMSGXML` (`PubDate` as `9/17/2026 10:32:35 AM`, `MSGText`, `MSGID`, `MSGType`, `MSGAgency`). The API double-escapes message text (`&amp;amp;`), so it is HTML-unescaped once after XML decoding. Calling `getStationMSGXML` with an empty station returns an empty `<FULLSCREENMSGS />` root whose populated shape hasn't been observed, so it isn't parsed. `STOP_STATUS` values are free text (`OnTime`, `ON TIME`, `Late`, `Delayed`, `BOARDING`, `ALL ABOARD`, `STAND BY`, `2 HOURS LATE`, ...) and are only trimmed, not normalized.
 
 **`GetTrainMap` and `GetTrainStops` return partial `Train` objects** — the API endpoints expose different subsets of fields. See godoc comments on each method for which fields are populated.
 
-**Tests use local XML fixtures** in `testdata/` rather than hitting the live API. Each `*_test.go` file reads the corresponding fixture file to drive tests.
+**Tests use local fixtures** in `testdata/` rather than hitting the live API (`getAlerts.pb` is a captured binary GTFS-rt alerts feed). Each `*_test.go` file reads the corresponding fixture file to drive tests.
 
 **Station aliases** (a local map declared inside `StationList` in `station_data.go`) exist because the NJTransit API returns inconsistent station names across endpoints. The `StationList` method merges these aliases into the `Station.Aliases` field.
