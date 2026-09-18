@@ -1,0 +1,4 @@
+# Generated protobuf bindings are not hand-written code; keep them out of
+# coverage so they don't swamp the library's numbers.
+ignore:
+  - "internal/gtfsrt/*.pb.go"
