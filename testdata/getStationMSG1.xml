@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<STATION>
+  <STATION_2CHAR>NY</STATION_2CHAR>
+  <STATIONNAME>New York</STATIONNAME>
+  <BANNERMSGS>
+    <MSG>
+      <PubDate>9/17/2026 10:32:35 AM</PubDate>
+      <MSGText>Hamilton &amp;amp; Princeton Junction Stations: Track 4 Unavailable ? Weekends from Friday, September 18, through Monday, October 5, 2026</MSGText>
+      <MSGID>2609171032561</MSGID>
+      <MSGType>banner</MSGType>
+      <MSGAgency>NJT</MSGAgency>
+    </MSG>
+    <MSG>
+      <PubDate>9/17/2026 10:43:36 AM</PubDate>
+      <MSGText>North Jersey Coast Line: Possible Delays due to Track Maintenance ? Weekdays from Monday, September 28 until Friday, October 9, 2026</MSGText>
+      <MSGID>2609171044191</MSGID>
+      <MSGType>banner</MSGType>
+      <MSGAgency>NJT</MSGAgency>
+    </MSG>
+    <MSG>
+      <PubDate>9/17/2026 11:36:11 AM</PubDate>
+      <MSGText>Temporary Rail Service Changes October 11, 2026 ? November 14, 2026* Portal North Bridge Enters Final Phase of Construction as Work Begins to Put the Second of Two Tracks into Service</MSGText>
+      <MSGID>2609171136382</MSGID>
+      <MSGType>banner</MSGType>
+      <MSGAgency>NJT</MSGAgency>
+    </MSG>
+  </BANNERMSGS>
+  <BANNERMSG>Hamilton &amp;amp; Princeton Junction Stations: Track 4 Unavailable ? Weekends from Friday, September 18, through Monday, October 5, 2026North Jersey Coast Line: Possible Delays due to Track Maintenance ? Weekdays from Monday, September 28 until Friday, October 9, 2026Temporary Rail Service Changes October 11, 2026 ? November 14, 2026* Portal North Bridge Enters Final Phase of Construction as Work Begins to Put the Second of Two Tracks into Service</BANNERMSG>
+</STATION>

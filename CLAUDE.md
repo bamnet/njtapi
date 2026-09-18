@@ -32,11 +32,14 @@ This is a single-package Go library (`github.com/bamnet/njtapi`) that wraps the 
 
 | Method | Endpoint | Returns |
 |---|---|---|
-| `StationData(ctx, stationID)` | `getTrainScheduleXML` | Departures from a station with per-train stop lists |
+| `StationData(ctx, stationID)` | `getTrainScheduleXML` | Departures from a station with per-train stop lists (incl. per-stop `STOP_STATUS`) and station banner messages |
+| `StationMessages(ctx, stationID, line)` | `getStationMSGXML` | Station banner/service messages |
 | `StationList(ctx)` | `getStationListXML` | All stations; enriched with aliases from a local map in `StationList` |
 | `VehicleData(ctx)` | `getVehicleDataXML` | All active trains (location, delay, next stop) |
 | `GetTrainMap(ctx, trainID)` | `getTrainMapXML` | Single train: location + track circuit only |
 | `GetTrainStops(ctx, trainID)` | `getTrainStopListXML` | Single train: full stop list with connecting lines |
+
+**Station messages** come from the `BANNERMSGS>MSG` element, which has the same shape in `getTrainScheduleXML` and `getStationMSGXML` (`PubDate` as `9/17/2026 10:32:35 AM`, `MSGText`, `MSGID`, `MSGType`, `MSGAgency`). The API double-escapes message text (`&amp;amp;`), so it is HTML-unescaped once after XML decoding. Calling `getStationMSGXML` with an empty station returns an empty `<FULLSCREENMSGS />` root whose populated shape hasn't been observed, so it isn't parsed. `STOP_STATUS` values are free text (`OnTime`, `ON TIME`, `Late`, `Delayed`, `BOARDING`, `ALL ABOARD`, `STAND BY`, `2 HOURS LATE`, ...) and are only trimmed, not normalized.
 
 **`GetTrainMap` and `GetTrainStops` return partial `Train` objects** — the API endpoints expose different subsets of fields. See godoc comments on each method for which fields are populated.
 

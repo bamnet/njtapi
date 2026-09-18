@@ -173,7 +173,7 @@ func (c *Client) GetTrainStops(ctx context.Context, trainID int) (*Train, error)
 		stop := StationStop{
 			Name:     s.Name,
 			Departed: (s.Departed == "YES"),
-			Status:   s.Status,
+			Status:   strings.TrimSpace(s.Status),
 		}
 		stop.Time, err = c.parseTime(s.Time)
 		if err != nil {
