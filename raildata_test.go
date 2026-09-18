@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	gtfs "github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
+	gtfs "github.com/bamnet/njtapi/internal/gtfsrt"
 	"google.golang.org/protobuf/proto"
 )
 

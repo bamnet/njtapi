@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
+	gtfs "github.com/bamnet/njtapi/internal/gtfsrt"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -98,7 +98,9 @@ func (c *Client) convertAlert(id string, a *gtfs.Alert) Alert {
 		Severity:    a.GetSeverityLevel().String(),
 	}
 
-	for _, p := range a.GetActivePeriod() {
+	// active_period is deprecated upstream in favour of communication_period
+	// and impact_period, but it is the only one NJ Transit populates.
+	for _, p := range a.GetActivePeriod() { //nolint:staticcheck // See above.
 		out.ActivePeriods = append(out.ActivePeriods, AlertPeriod{
 			Start: c.unixTime(p.GetStart()),
 			End:   c.unixTime(p.GetEnd()),
