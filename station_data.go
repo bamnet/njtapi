@@ -19,6 +19,10 @@ type Station struct {
 	Name       string         // Station name
 	Aliases    []string       // Additional names for this station
 	Departures []StationTrain // Trains departing from this station
+
+	// Messages are station-level banner messages (service advisories)
+	// shown alongside the departures. Only populated by StationData.
+	Messages []StationMessage
 }
 
 // A StationTrain models a train which is scheduled to depart from a station.
@@ -46,7 +50,7 @@ type StationStop struct {
 	Departed      bool      // Indicates if the train has departed the stop or not
 	DepartureTime time.Time // Time the train was intially scheduled to depart this station
 	Lines         []Line    // Connecting lines available at this station
-	Status        string    // Current status of the train at this stop
+	Status        string    // Status of the train at this stop, e.g. "OnTime", "Late", "BOARDING", "2 HOURS LATE"; often empty
 	ParseErrors   []error   // Errors encountered while parsing this stop
 }
 
@@ -60,6 +64,7 @@ type stationDataResponse struct {
 	XMLName      xml.Name          `xml:"STATION"`
 	Station2Char string            `xml:"STATION_2CHAR"`
 	StationName  string            `xml:"STATIONNAME"`
+	Messages     []stationMessage  `xml:"BANNERMSGS>MSG"`
 	Items        []stationDataItem `xml:"ITEMS>ITEM"`
 }
 
@@ -91,6 +96,7 @@ type stationDataStop struct {
 	Name     string `xml:"NAME"`
 	Time     string `xml:"TIME"`
 	Departed string `xml:"DEPARTED"`
+	Status   string `xml:"STOP_STATUS"`
 }
 
 // StationData returns details about upcoming trains stopping at a station.
@@ -155,12 +161,18 @@ func (c *Client) StationData(ctx context.Context, station string) (*Station, err
 				})
 			}
 			stops[j].Departed = (s.Departed == "YES")
+			stops[j].Status = strings.TrimSpace(s.Status)
 		}
 		train.Stops = stops
 		trains = append(trains, train)
 	}
 
-	s := &Station{ID: data.Station2Char, Name: data.StationName, Departures: trains}
+	s := &Station{
+		ID:         data.Station2Char,
+		Name:       data.StationName,
+		Departures: trains,
+		Messages:   c.parseStationMessages(data.Messages),
+	}
 	return s, nil
 }
 

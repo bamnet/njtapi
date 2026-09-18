@@ -12,6 +12,7 @@ Features include:
 
 *  Timetables and statuses of departures from each station.
 *  Train status including location and stops.
+*  Station service messages (banner advisories).
 *  List of all the train stations in the system.
 
 See the [GoDoc](https://godoc.org/github.com/bamnet/njtapi) for full details.
