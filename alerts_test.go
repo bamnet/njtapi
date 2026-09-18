@@ -18,8 +18,8 @@ import (
 func ExampleClient_Alerts() {
 	// Update these values. RailData credentials are separate from the legacy
 	// API's username and password.
-	username := "your RailData username"
-	password := "your RailData password"
+	username := "your username"
+	password := "your password"
 
 	client := NewClient("", "", "", WithRailData(username, password))
 	alerts, err := client.Alerts(context.Background())
