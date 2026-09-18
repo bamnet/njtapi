@@ -19,12 +19,73 @@ import (
 )
 
 // Client stores connection info needed talking to the NJTransit API.
+//
+// By default a Client talks to the legacy train data API using the username
+// and password given to NewClient. Some methods, such as Alerts, use
+// NJTransit's RailData API instead and need RailData credentials, supplied
+// with the WithRailData option.
+//
+// A Client is safe for concurrent use.
 type Client struct {
 	httpClient *http.Client
 	baseURL    string
 	username   string
 	password   string
 	location   *time.Location
+
+	// railData is nil unless WithRailData was supplied.
+	railData *railData
+}
+
+// Option configures optional features of a Client.
+type Option func(*options)
+
+// options collects the settings made by Option values.
+type options struct {
+	railDataUsername string
+	railDataPassword string
+	railDataURL      string
+}
+
+// WithRailData supplies credentials for NJTransit's RailData API, which
+// methods such as Alerts need.
+//
+// RailData credentials are issued separately from the username and password
+// passed to NewClient, and neither set works on the other API.
+func WithRailData(username, password string) Option {
+	return func(o *options) {
+		o.railDataUsername = username
+		o.railDataPassword = password
+	}
+}
+
+// WithRailDataURL overrides the root URL of the RailData API, which defaults
+// to https://raildata.njtransit.com/api/. Individual APIs such as GTFSRT are
+// requested below it. This is mostly useful for tests and test environments.
+// It has no effect without WithRailData.
+func WithRailDataURL(baseURL string) Option {
+	return func(o *options) {
+		o.railDataURL = baseURL
+	}
+}
+
+// applyOptions applies opts to c.
+func (c *Client) applyOptions(opts []Option) *Client {
+	o := options{railDataURL: railDataBaseURL}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&o)
+		}
+	}
+	if o.railDataUsername != "" || o.railDataPassword != "" {
+		c.railData = &railData{
+			httpClient: c.httpClient,
+			baseURL:    o.railDataURL,
+			username:   o.railDataUsername,
+			password:   o.railDataPassword,
+		}
+	}
+	return c
 }
 
 // ErrUnexpectedStatus is returned when the API returns a non-2xx HTTP status code.
@@ -51,37 +112,40 @@ func (e *APIError) Unwrap() error {
 //
 // baseURL: The root URL that the API is exposed on.
 // username / password: Authentication credentials for calling the API.
-func NewClient(baseURL, username, password string) *Client {
-	return NewClientWithLocation(baseURL, username, password, defaultLocation())
+// opts: Optional features, such as WithRailData.
+func NewClient(baseURL, username, password string, opts ...Option) *Client {
+	return NewClientWithLocation(baseURL, username, password, defaultLocation(), opts...)
 }
 
 // NewClientWithLocation constructs a new client with a custom timezone location.
 // If the provided location is nil, it falls back to UTC.
-func NewClientWithLocation(baseURL, username, password string, loc *time.Location) *Client {
+func NewClientWithLocation(baseURL, username, password string, loc *time.Location, opts ...Option) *Client {
 	if loc == nil {
 		loc = time.UTC
 	}
-	return &Client{
+	c := &Client{
 		httpClient: &http.Client{Timeout: 30 * time.Second},
 		baseURL:    baseURL,
 		username:   username,
 		password:   password,
 		location:   loc,
 	}
+	return c.applyOptions(opts)
 }
 
 // NewCustomClient uses the supplied `http.Client` when talking to the API.
 // This can be useful if you need to supply a custom timeout, proxy server, etc.
 //
 // See `NewClient` for a description of the rest of the parameters.
-func NewCustomClient(c *http.Client, baseURL, username, password string) *Client {
-	return &Client{
+func NewCustomClient(c *http.Client, baseURL, username, password string, opts ...Option) *Client {
+	client := &Client{
 		httpClient: c,
 		baseURL:    baseURL,
 		username:   username,
 		password:   password,
 		location:   defaultLocation(),
 	}
+	return client.applyOptions(opts)
 }
 
 func defaultLocation() *time.Location {

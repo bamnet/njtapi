@@ -14,6 +14,7 @@ Features include:
 *  Train status including location and stops.
 *  Station service messages (banner advisories).
 *  List of all the train stations in the system.
+*  Service alerts from the RailData GTFS-realtime feed (`Client.Alerts`).
 
 See the [GoDoc](https://godoc.org/github.com/bamnet/njtapi) for full details.
 
@@ -27,6 +28,19 @@ import "github.com/bamnet/njtapi"
 
 Register with the [NJTransit Developer Portal](https://datasource.njtransit.com)
 to get a username and password needed to call the API.
+
+Service alerts come from NJTransit's RailData API, which has its own username
+and password, separate from the ones above. Pass them with the `WithRailData`
+option:
+
+```go
+client := njtapi.NewClient(baseURL, username, password,
+	njtapi.WithRailData(railDataUsername, railDataPassword))
+alerts, err := client.Alerts(context.Background())
+```
+
+Without `WithRailData`, `Alerts` returns `ErrRailDataNotConfigured`. The client
+logs in to RailData on first use and caches a token for each RailData API.
 
 ## Example Usage
 
